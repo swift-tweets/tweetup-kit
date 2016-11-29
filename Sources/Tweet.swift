@@ -1,14 +1,19 @@
 public struct Tweet {
-    public let message: String
-    public let attached: Attached?
+    public let body: String
+    public let attachment: Attachment?
     
-    public init(message: String, attached: Attached? = nil) throws {
-        self.message = message
-        self.attached = attached
+    public init(body: String, attachment: Attachment? = nil) throws {
+        guard !body.isEmpty || attachment != nil else { throw TweetInitializationError.emptyTweet }
+        self.body = body
+        self.attachment = attachment
     }
     
-    public enum Attached {
+    public enum Attachment {
         case image(Image)
         case code(Code)
     }
+}
+
+public enum TweetInitializationError: Error {
+    case emptyTweet
 }
