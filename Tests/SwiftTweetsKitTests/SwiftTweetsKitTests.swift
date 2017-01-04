@@ -23,7 +23,7 @@ class SwiftTweetsKitTests: XCTestCase {
             let tweet = tweets[6]
             switch tweet.attachment {
             case let .some(.code(code)):
-                XCTAssertEqual(code.languageName, "swift")
+                XCTAssertEqual(code.language, .swift)
                 XCTAssertEqual(code.fileName, "hello.swift")
                 XCTAssertEqual(code.body, "print(\"Hello swift!\")\n")
             default:

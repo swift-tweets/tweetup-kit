@@ -45,13 +45,22 @@ extension Tweet {
 extension Code {
     fileprivate init(string: String, matchingResult: NSTextCheckingResult) throws {
         let nsString = string as NSString
-        let fileNameRange = matchingResult.rangeAt(3)
-        if (fileNameRange.location == NSNotFound) {
-            throw TweetParseError.codeWithoutFileName(string)
+        let language = Language(identifier: nsString.substring(with: matchingResult.rangeAt(1)))
+        let fileName: String
+        do {
+            let range = matchingResult.rangeAt(3)
+            if (range.location == NSNotFound) {
+                guard let filenameExtension = language.filenameExtension else {
+                    throw TweetParseError.codeWithoutFileName(string)
+                }
+                fileName = "code.\(filenameExtension)"
+            } else {
+                fileName = nsString.substring(with: range)
+            }
         }
         self.init(
-            languageName: nsString.substring(with: matchingResult.rangeAt(1)),
-            fileName: nsString.substring(with: fileNameRange),
+            language: language,
+            fileName: fileName,
             body: nsString.substring(with: matchingResult.rangeAt(4))
         )
     }

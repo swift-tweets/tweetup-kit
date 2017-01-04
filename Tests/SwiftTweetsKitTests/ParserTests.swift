@@ -19,7 +19,7 @@ class ParserTests: XCTestCase {
                 XCTAssertEqual(tweet.body, "Up above the world so high,\nLike a diamond in the sky.")
                 switch tweet.attachment {
                 case let .some(.code(code)):
-                    XCTAssertEqual(code.languageName, "swift")
+                    XCTAssertEqual(code.language, .swift)
                     XCTAssertEqual(code.fileName, "hello.swift")
                     XCTAssertEqual(code.body, "let name = \"Swift\"\nprint(\"Hello \\(name)!\")\n")
                 default:
@@ -56,7 +56,7 @@ class ParserTests: XCTestCase {
                 XCTAssertEqual(tweet.body, "Up above the world so high,\nLike a diamond in the sky.")
                 switch tweet.attachment {
                 case let .some(.code(code)):
-                    XCTAssertEqual(code.languageName, "swift")
+                    XCTAssertEqual(code.language, .swift)
                     XCTAssertEqual(code.fileName, "hello.swift")
                     XCTAssertEqual(code.body, "let name = \"Swift\"\nprint(\"Hello \\(name)!\")\n")
                 default:
@@ -97,7 +97,7 @@ class ParserTests: XCTestCase {
                 XCTAssertEqual(rawString, "Up above the world so high,\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\nLike a diamond in the sky.")
                 switch attachment {
                 case let .code(code):
-                    XCTAssertEqual(code.languageName, "swift")
+                    XCTAssertEqual(code.language, .swift)
                     XCTAssertEqual(code.fileName, "hello.swift")
                     XCTAssertEqual(code.body, "let name = \"Swift\"\nprint(\"Hello \\(name)!\")\n")
                 default:
@@ -109,12 +109,12 @@ class ParserTests: XCTestCase {
         }
         
         do {
-            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)"
+            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```unknown\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)"
             do {
                 _ = try Tweet.tweets(with: string)
                 XCTFail()
             } catch let TweetParseError.codeWithoutFileName(rawString) {
-                XCTAssertEqual(rawString, "Up above the world so high,\nLike a diamond in the sky.\n\n```swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```")
+                XCTAssertEqual(rawString, "Up above the world so high,\nLike a diamond in the sky.\n\n```unknown\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```")
             } catch _ {
                 XCTFail()
             }
@@ -135,7 +135,7 @@ class ParserTests: XCTestCase {
             XCTAssertEqual(tweet.body, "Twinkle, twinkle, little star, How I wonder what you are! Up above the world so high, Like a diamond in the sky.")
             switch tweet.attachment {
             case let .some(.code(code)):
-                XCTAssertEqual(code.languageName, "swift")
+                XCTAssertEqual(code.language, .swift)
                 XCTAssertEqual(code.fileName, "hello.swift")
                 XCTAssertEqual(code.body, "print(\"Hello world!\")\n")
             default:
@@ -150,7 +150,7 @@ class ParserTests: XCTestCase {
                 XCTFail()
             } catch let TweetParseError.nonTailAttachment(rawString, .code(code)) {
                 XCTAssertEqual(rawString, string)
-                XCTAssertEqual(code.languageName, "swift")
+                XCTAssertEqual(code.language, .swift)
                 XCTAssertEqual(code.fileName, "hello.swift")
                 XCTAssertEqual(code.body, "print(\"Hello world!\")\n")
             } catch _ {
@@ -194,7 +194,7 @@ class ParserTests: XCTestCase {
                 XCTAssertEqual(rawString, string)
                 switch attachments[0] {
                 case let .code(code):
-                    XCTAssertEqual(code.languageName, "swift")
+                    XCTAssertEqual(code.language, .swift)
                     XCTAssertEqual(code.fileName, "hello.swift")
                     XCTAssertEqual(code.body, "print(\"Hello world!\")\n")
                 default:
