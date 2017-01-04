@@ -1,5 +1,5 @@
 import XCTest
-@testable import SwiftTweetsKit
+@testable import TweetupKit
 
 class ParserTests: XCTestCase {
     func testTweets() {

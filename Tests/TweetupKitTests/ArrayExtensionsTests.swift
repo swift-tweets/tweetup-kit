@@ -1,5 +1,5 @@
 import XCTest
-@testable import SwiftTweetsKit
+@testable import TweetupKit
 
 class ArrayExtensionsTests: XCTestCase {
     func testTrimmingElements() {
