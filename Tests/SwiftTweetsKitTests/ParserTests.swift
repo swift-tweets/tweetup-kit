@@ -107,6 +107,18 @@ class ParserTests: XCTestCase {
                 XCTFail()
             }
         }
+        
+        do {
+            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)"
+            do {
+                _ = try Tweet.tweets(with: string)
+                XCTFail()
+            } catch let TweetParseError.codeWithoutFileName(rawString) {
+                XCTAssertEqual(rawString, "Up above the world so high,\nLike a diamond in the sky.\n\n```swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```")
+            } catch _ {
+                XCTFail()
+            }
+        }
     }
     
     func testInit() {
