@@ -21,4 +21,23 @@ class TweetTests: XCTestCase {
             XCTAssertEqual(result, "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)")
         }
     }
+    
+    func testUrlPattern() {
+        do {
+            let string = "Twinkle, twinkle, little star, http://qaleido.space How I wonder what you are! https://swift-tweets.github.io/?foo=bar&baz=qux#tweeters"
+            
+            let results = Tweet.urlPattern.matches(in: string)
+            XCTAssertEqual(results.count, 2)
+            
+            do {
+                let result = results[0]
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "http://qaleido.space")
+            }
+
+            do {
+                let result = results[1]
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "https://swift-tweets.github.io/?foo=bar&baz=qux#tweeters")
+            }
+        }
+    }
 }

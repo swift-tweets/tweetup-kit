@@ -1,4 +1,8 @@
+import Foundation
+
 public struct Tweet {
+    internal static let urlPattern = try! NSRegularExpression(pattern: "(^|\\s)(http(s)?://[a-zA-Z0-9~!@#$%&*-_=+\\[\\]|:;',./?]*)($|\\s)")
+    
     public let body: String
     public let attachment: Attachment?
     
