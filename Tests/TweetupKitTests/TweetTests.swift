@@ -2,6 +2,61 @@ import XCTest
 @testable import TweetupKit
 
 class TweetTests: XCTestCase {
+    func testInit() {
+        do {
+            let result = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
+            XCTAssertEqual(result.body, "Twinkle, twinkle, little star,\nHow I wonder what you are!")
+        }
+        
+        do { // empty (0)
+            _ = try Tweet(body: "")
+            XCTFail()
+        } catch TweetInitializationError.empty {
+        } catch {
+            XCTFail()
+        }
+        
+        do { // 1
+            let result = try! Tweet(body: "A")
+            XCTAssertEqual(result.body, "A")
+        }
+        
+        do { // 140
+            let result = try! Tweet(body: "0123456789112345678921234567893123456789412345678951234567896123456789712345678981234567899123456789A123456789B123456789C123456789D123456789")
+            XCTAssertEqual(result.body, "0123456789112345678921234567893123456789412345678951234567896123456789712345678981234567899123456789A123456789B123456789C123456789D123456789")
+        }
+        
+        do { // too long (141)
+            _ = try Tweet(body: "0123456789112345678921234567893123456789412345678951234567896123456789712345678981234567899123456789A123456789B123456789C123456789D123456789X")
+            XCTFail()
+        } catch let TweetInitializationError.tooLong(body, attachment, length) {
+            XCTAssertEqual(body, "0123456789112345678921234567893123456789412345678951234567896123456789712345678981234567899123456789A123456789B123456789C123456789D123456789X")
+            XCTAssertNil(attachment)
+            XCTAssertEqual(length, 141)
+        } catch {
+            XCTFail()
+        }
+        
+        do { // too long with a `.code`
+            _ = try Tweet(body: "0123456789112345678921234567893123456789412345678951234567896123456789712345678981234567899123456789A123456789B1234X", attachment: .code(Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")")))
+            XCTFail()
+        } catch let TweetInitializationError.tooLong(body, attachment, length) {
+            XCTAssertEqual(body, "0123456789112345678921234567893123456789412345678951234567896123456789712345678981234567899123456789A123456789B1234X")
+            guard let attachment = attachment else { XCTFail(); return }
+            switch attachment {
+            case let .code(code):
+                XCTAssertEqual(code.language, .swift)
+                XCTAssertEqual(code.fileName, "hello.swift")
+                XCTAssertEqual(code.body, "let name = \"Swift\"\nprint(\"Hello \\(name)!\")")
+            case .image(_):
+                XCTFail()
+            }
+            XCTAssertEqual(length, 141)
+        } catch {
+            XCTFail()
+        }
+    }
+    
     func testDescription() {
         do {
             let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
