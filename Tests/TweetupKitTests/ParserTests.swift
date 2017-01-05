@@ -82,7 +82,7 @@ class ParserTests: XCTestCase {
             do {
                 _ = try Tweet.tweets(with: string)
                 XCTFail()
-            } catch TweetInitializationError.emptyTweet {
+            } catch TweetInitializationError.empty {
             } catch _ {
                 XCTFail()
             }

@@ -2,14 +2,59 @@ import Foundation
 
 public struct Tweet {
     internal static let urlPattern = try! NSRegularExpression(pattern: "(^|\\s)(http(s)?://[a-zA-Z0-9~!@#$%&*-_=+\\[\\]|:;',./?]*)($|\\s)")
+    internal static let urlLength = 23
+    internal static let maxLength = 140
     
     public let body: String
     public let attachment: Attachment?
     
     public init(body: String, attachment: Attachment? = nil) throws {
-        guard !body.isEmpty || attachment != nil else { throw TweetInitializationError.emptyTweet }
+        guard !body.isEmpty || attachment != nil else { throw TweetInitializationError.empty }
         self.body = body
         self.attachment = attachment
+        
+        let length = self.length
+        guard length <= Tweet.maxLength else { throw TweetInitializationError.tooLong(self.body, self.attachment, length) }
+    }
+    
+    public var length: Int {
+        let replaced = NSMutableString(string: body)
+        let numberOfUrls = Tweet.urlPattern.replaceMatches(in: replaced, options: [], range: NSMakeRange(0, replaced.length), withTemplate: "$1$4")
+        
+        let normalized = replaced.precomposedStringWithCanonicalMapping as NSString
+        
+        var bodyLength = normalized.length + Tweet.urlLength * numberOfUrls
+        do {
+            let buffer = UnsafeMutablePointer<unichar>.allocate(capacity: normalized.length)
+            defer {
+                buffer.deallocate(capacity: normalized.length)
+            }
+            normalized.getCharacters(buffer)
+            var skip = false
+            let end = normalized.length - 1
+            if end > 1 {
+                for i in 0..<end { // lack of the last element for `i + 1`
+                    guard !skip else {
+                        skip = false
+                        continue
+                    }
+                    if CFStringIsSurrogateHighCharacter(buffer[i])
+                        && CFStringIsSurrogateLowCharacter(buffer[i + 1]) {
+                        bodyLength -= 1
+                        skip = true
+                    }
+                }
+            }
+        }
+        
+        guard let attachment = attachment else { return bodyLength }
+
+        switch attachment {
+        case .code:
+            return bodyLength + 2 /* new lines */ + Tweet.urlLength
+        case .image:
+            return bodyLength
+        }
     }
     
     public enum Attachment {
@@ -32,5 +77,6 @@ extension Tweet: CustomStringConvertible {
 }
 
 public enum TweetInitializationError: Error {
-    case emptyTweet
+    case empty
+    case tooLong(String, Tweet.Attachment?, Int)
 }
