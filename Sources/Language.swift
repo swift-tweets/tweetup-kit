@@ -71,6 +71,55 @@ public enum Language {
         }
     }
     
+    public var identifier: String {
+        switch self {
+        case .c:
+            return "c"
+        case .cpp:
+            return "cpp"
+        case .cSharp:
+            return "cs"
+        case .d:
+            return "d"
+        case .elixir:
+            return "elixir"
+        case .erlang:
+            return "erlang"
+        case .go:
+            return "go"
+        case .haskell:
+            return "haskell"
+        case .java:
+            return "java"
+        case .javaScript:
+            return "javascript"
+        case .kotlin:
+            return "kotlin"
+        case .objectiveC:
+            return "objc"
+        case .ocaml:
+            return "ocaml"
+        case .perl:
+            return "perl"
+        case .php:
+            return "php"
+        case .python:
+            return "python"
+        case .ruby:
+            return "ruby"
+        case .rust:
+            return "rust"
+        case .scala:
+            return "scala"
+        case .swift:
+            return "swift"
+        case .typeScript:
+            return "typescript"
+        case let .other(identifier):
+            return identifier
+        }
+    }
+    
     public var filenameExtension: String? {
         switch self {
         case .c:
