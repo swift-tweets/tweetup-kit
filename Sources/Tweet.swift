@@ -14,6 +14,19 @@ public struct Tweet {
     }
 }
 
+extension Tweet: CustomStringConvertible {
+    public var description: String {
+        guard let attachment = attachment else { return body }
+        
+        switch attachment {
+        case let .image(image):
+            return "\(body)\n\n\(image)"
+        case let .code(code):
+            return "\(body)\n\n\(code)"
+        }
+    }
+}
+
 public enum TweetInitializationError: Error {
     case emptyTweet
 }
