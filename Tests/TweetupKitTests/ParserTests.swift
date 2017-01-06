@@ -5,7 +5,7 @@ class ParserTests: XCTestCase {
     func testTweets() {
         do {
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)"
-            let tweets = try! Tweet.tweets(with: string)
+            let tweets = try! Tweet.tweets(from: string)
             XCTAssertEqual(tweets.count, 3)
             
             do {
@@ -42,7 +42,7 @@ class ParserTests: XCTestCase {
         
         do { // without blank lines
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n---\nUp above the world so high,\nLike a diamond in the sky.\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n---\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)"
-            let tweets = try! Tweet.tweets(with: string)
+            let tweets = try! Tweet.tweets(from: string)
             XCTAssertEqual(tweets.count, 3)
             
             do {
@@ -80,7 +80,7 @@ class ParserTests: XCTestCase {
         do { // `TweetInitializationError`
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)\n---"
             do {
-                _ = try Tweet.tweets(with: string)
+                _ = try Tweet.tweets(from: string)
                 XCTFail()
             } catch TweetInitializationError.empty {
             } catch _ {
@@ -91,7 +91,7 @@ class ParserTests: XCTestCase {
         do { // `TweetParseError`
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\nLike a diamond in the sky.\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)"
             do {
-                _ = try Tweet.tweets(with: string)
+                _ = try Tweet.tweets(from: string)
                 XCTFail()
             } catch let TweetParseError.nonTailAttachment(rawString, attachment) {
                 XCTAssertEqual(rawString, "Up above the world so high,\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\nLike a diamond in the sky.")
@@ -111,12 +111,50 @@ class ParserTests: XCTestCase {
         do {
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```unknown\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)"
             do {
-                _ = try Tweet.tweets(with: string)
+                _ = try Tweet.tweets(from: string)
                 XCTFail()
             } catch let TweetParseError.codeWithoutFileName(rawString) {
                 XCTAssertEqual(rawString, "Up above the world so high,\nLike a diamond in the sky.\n\n```unknown\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```")
             } catch _ {
                 XCTFail()
+            }
+        }
+        
+        do { // hash tag
+            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star, #swtws\nHow I wonder what you are!\n\n![](path/to/image.png)"
+            let hashTag = "#swtws"
+            let tweets = try! Tweet.tweets(from: string, hashTag: hashTag)
+            XCTAssertEqual(tweets.count, 3)
+            
+            do {
+                let tweet = tweets[0]
+                XCTAssertEqual(tweet.body, "Twinkle, twinkle, little star,\nHow I wonder what you are! #swtws")
+                XCTAssertTrue(tweet.attachment == nil)
+            }
+            
+            do {
+                let tweet = tweets[1]
+                XCTAssertEqual(tweet.body, "Up above the world so high,\nLike a diamond in the sky. #swtws")
+                switch tweet.attachment {
+                case let .some(.code(code)):
+                    XCTAssertEqual(code.language, .swift)
+                    XCTAssertEqual(code.fileName, "hello.swift")
+                    XCTAssertEqual(code.body, "let name = \"Swift\"\nprint(\"Hello \\(name)!\")\n")
+                default:
+                    XCTFail()
+                }
+            }
+            
+            do {
+                let tweet = tweets[2]
+                XCTAssertEqual(tweet.body, "Twinkle, twinkle, little star, #swtws\nHow I wonder what you are!")
+                switch tweet.attachment {
+                case let .some(.image(image)):
+                    XCTAssertEqual(image.alternativeText, "")
+                    XCTAssertEqual(image.path, "path/to/image.png")
+                default:
+                    XCTFail()
+                }
             }
         }
     }
@@ -335,6 +373,96 @@ class ParserTests: XCTestCase {
             
             let results = Tweet.imagePattern.matches(in: string)
             XCTAssertEqual(results.count, 0)
+        }
+    }
+    
+    func testHashTagPattern() {
+        do {
+            let string = "#abc"
+            
+            let results = Tweet.hashTagPattern.matches(in: string)
+            XCTAssertEqual(results.count, 1)
+            XCTAssertEqual((string as NSString).substring(with: results[0].rangeAt(0)), "#abc")
+        }
+        
+        do {
+            let string = "##abc"
+            
+            let results = Tweet.hashTagPattern.matches(in: string)
+            XCTAssertEqual(results.count, 0)
+        }
+        
+        do {
+            let string = "#a-bc"
+            
+            let results = Tweet.hashTagPattern.matches(in: string)
+            XCTAssertEqual(results.count, 0)
+        }
+    }
+    
+    func testHashTagInTweetPattern() {
+        do {
+            let string = "foo bar #swtws\nqux"
+            
+            let results = Tweet.hashTagInTweetPattern.matches(in: string)
+            XCTAssertEqual(results.count, 1)
+            
+            do {
+                let result = results[0]
+                XCTAssertEqual(result.numberOfRanges, 4)
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#swtws")
+            }
+        }
+        
+        do {
+            let string = "#swtws foo bar \nqux"
+            
+            let results = Tweet.hashTagInTweetPattern.matches(in: string)
+            XCTAssertEqual(results.count, 1)
+            
+            do {
+                let result = results[0]
+                XCTAssertEqual(result.numberOfRanges, 4)
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#swtws")
+            }
+        }
+
+        do {
+            let string = "foo bar \nqux #swtws"
+            
+            let results = Tweet.hashTagInTweetPattern.matches(in: string)
+            XCTAssertEqual(results.count, 1)
+            
+            do {
+                let result = results[0]
+                XCTAssertEqual(result.numberOfRanges, 4)
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#swtws")
+            }
+        }
+        
+        do {
+            let string = "#abc Up above the world so high, #def\nLike a diamond in the sky. #ghi\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```"
+            
+            let results = Tweet.hashTagInTweetPattern.matches(in: string)
+            XCTAssertEqual(results.count, 3)
+            
+            do {
+                let result = results[0]
+                XCTAssertEqual(result.numberOfRanges, 4)
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#abc")
+            }
+            
+            do {
+                let result = results[1]
+                XCTAssertEqual(result.numberOfRanges, 4)
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#def")
+            }
+            
+            do {
+                let result = results[2]
+                XCTAssertEqual(result.numberOfRanges, 4)
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#ghi")
+            }
         }
     }
 }

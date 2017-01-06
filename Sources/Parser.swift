@@ -3,20 +3,41 @@ import Foundation
 extension Tweet {
     internal static let imagePattern = try! NSRegularExpression(pattern: "!\\[([^\\]]*)\\]\\(([^\\)]*)\\)")
     internal static let codePattern = try! NSRegularExpression(pattern: "```([a-z]*)(:(.*))?\\n((.*\\n)*)```")
+    private static let hashTagPatternString = "#\\w+"
+    internal static let hashTagPattern = try! NSRegularExpression(pattern: "^\(hashTagPatternString)$")
+    internal static let hashTagInTweetPattern = try! NSRegularExpression(pattern: "(^|\\s)(\(hashTagPatternString))($|\\s)")
     
-    public static func tweets(with string: String) throws -> [Tweet] {
+    public static func tweets(from string: String, hashTag: String? = nil) throws -> [Tweet] {
         return try string.lines
             .separated(by: "---")
             .map { lines in lines.trimmingElements(in: [""]).joined(separator: "\n") }
-            .map(Tweet.init)
+            .map { try Tweet(rawString: $0, hashTag: hashTag) }
     }
     
-    public init(rawString: String) throws {
+    public init(rawString: String, hashTag: String? = nil) throws {
         let attachment = try Tweet.matchedAttachment(in: rawString)
-        let replacedString = attachment.map { attachment -> String in
+        let originalBody = attachment.map { attachment -> String in
             (rawString as NSString).replacingCharacters(in: attachment.0, with: "")
         }?.trimmingCharacters(in: .whitespacesAndNewlines) ?? rawString
-        try self.init(body: replacedString, attachment: attachment?.1)
+        let body = try Tweet.bodyWithHashTag(body: originalBody, hashTag: hashTag)
+        try self.init(body: body, attachment: attachment?.1)
+    }
+    
+    internal static func bodyWithHashTag(body: String, hashTag: String?) throws -> String {
+        guard let hashTag = hashTag else { return body }
+        guard Tweet.hashTagPattern.matches(in: hashTag).count == 1 else {
+            throw TweetParseError.illegalHashTag(hashTag)
+        }
+        guard !Tweet.containsHashTag(body: body, hashTag: hashTag) else {
+            return body
+        }
+        return body + " " + hashTag
+    }
+    
+    internal static func containsHashTag(body: String, hashTag: String) -> Bool {
+        return Tweet.hashTagInTweetPattern.matches(in: body).map {
+            (body as NSString).substring(with: $0.rangeAt(2))
+        }.contains(hashTag)
     }
     
     internal static func matchedAttachment(in string: String) throws -> (NSRange, Attachment)? {
@@ -80,4 +101,5 @@ public enum TweetParseError: Error {
     case multipleAttachments(String, [Tweet.Attachment])
     case nonTailAttachment(String, Tweet.Attachment)
     case codeWithoutFileName(String)
+    case illegalHashTag(String)
 }

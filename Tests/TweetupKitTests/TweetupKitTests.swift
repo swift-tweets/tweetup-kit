@@ -6,7 +6,7 @@ import Foundation
 class TweetupKitTests: XCTestCase {
     func testSample() {
         let string = try! String(contentsOf: URL(string: "https://gist.githubusercontent.com/koher/6707cd98ea3a2c29f58c0fdecbe4825c/raw/428dc616a87a39baf1681c910984a3f53c91378b/sample.tw")!, encoding: .utf8)
-        let tweets = try! Tweet.tweets(with: string)
+        let tweets = try! Tweet.tweets(from: string)
         XCTAssertEqual(tweets.count, 9)
         
         do {
