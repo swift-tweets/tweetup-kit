@@ -58,8 +58,7 @@ extension Tweet {
     }
     
     internal static func matchingAttachments<T>(in string: String, pattern: NSRegularExpression ,initializer: (String, NSTextCheckingResult) throws -> T) throws -> [(NSRange, T)] {
-        return try pattern.matches(in: string, options: [], range: NSMakeRange(0, string.characters.count))
-            .map { ($0.rangeAt(0), try initializer(string, $0)) }
+        return try pattern.matches(in: string).map { ($0.rangeAt(0), try initializer(string, $0)) }
     }
 }
 

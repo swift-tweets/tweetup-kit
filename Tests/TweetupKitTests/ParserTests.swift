@@ -181,6 +181,20 @@ class ParserTests: XCTestCase {
             }
         }
         
+        do { // with `.code`
+            let string = "Twinkle, twinkle, little star, How I wonder what you are! Up above the world so high, Like a diamond in the sky.\n```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```"
+            let tweet = try! Tweet(rawString: string)
+            XCTAssertEqual(tweet.body, "Twinkle, twinkle, little star, How I wonder what you are! Up above the world so high, Like a diamond in the sky.")
+            switch tweet.attachment {
+            case let .some(.code(code)):
+                XCTAssertEqual(code.language, .swift)
+                XCTAssertEqual(code.fileName, "hello.swift")
+                XCTAssertEqual(code.body, "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
+            default:
+                XCTFail()
+            }
+        }
+        
         do { // with non-tail `.code`
             let string = "Twinkle, twinkle, little star, How I wonder what you are! Up above the world so high, Like a diamond in the sky.\n```swift:hello.swift\nprint(\"Hello world!\")\n```\nTwinkle, twinkle, little star, How I wonder what you are!"
             do {
@@ -286,6 +300,22 @@ class ParserTests: XCTestCase {
         }
         
         do {
+            let string = "```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```"
+            
+            let results = Tweet.codePattern.matches(in: string)
+            XCTAssertEqual(results.count, 1)
+            
+            let result = results[0]
+            XCTAssertEqual(result.numberOfRanges, 6)
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "swift")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), ":hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
+        }
+        
+        do {
             let string = "foo bar\n```swift:hello.swift\nprint(\"Hello world!\")\n```\nqux"
             
             let results = Tweet.codePattern.matches(in: string)
@@ -315,6 +345,22 @@ class ParserTests: XCTestCase {
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "print(\"Hello world!\")\n")
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(\"Hello world!\")\n")
+        }
+        
+        do {
+            let string = "Twinkle, twinkle, little star, How I wonder what you are! Up above the world so high, Like a diamond in the sky.\n```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```"
+            
+            let results = Tweet.codePattern.matches(in: string)
+            XCTAssertEqual(results.count, 1)
+            
+            let result = results[0]
+            XCTAssertEqual(result.numberOfRanges, 6)
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "swift")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), ":hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
         }
     }
     
