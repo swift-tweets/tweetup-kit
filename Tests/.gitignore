@@ -1,3 +1,6 @@
 /twitter.json
 /twitter-*.json
 !/twitter-template.json
+/github.json
+/github-*.json
+!/github-template.json
