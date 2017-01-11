@@ -1,7 +1,7 @@
 import Foundation
 
 extension Tweet {
-    internal static let imagePattern = try! NSRegularExpression(pattern: "!\\[([^\\]]*)\\]\\(([^\\)]*)\\)")
+    internal static let imagePattern = try! NSRegularExpression(pattern: "!\\[([^\\]]*)\\]\\(((twitter:([0-9]+))|(gist:([0-9a-f]+))|([^\\)]*))\\)")
     internal static let codePattern = try! NSRegularExpression(pattern: "```([a-z]*)(:(.*))?\\n((.*\\n)*)```")
     private static let hashTagPatternString = "#\\w+"
     internal static let hashTagPattern = try! NSRegularExpression(pattern: "^\(hashTagPatternString)$")

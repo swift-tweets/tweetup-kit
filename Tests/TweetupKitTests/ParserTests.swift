@@ -372,10 +372,11 @@ class ParserTests: XCTestCase {
             XCTAssertEqual(results.count, 1)
             
             let result = results[0]
-            XCTAssertEqual(result.numberOfRanges, 3)
+            XCTAssertEqual(result.numberOfRanges, 8)
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![](path/to/image.png)")
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "")
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "path/to/image.png")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(7)), "path/to/image.png")
         }
         
         do {
@@ -385,10 +386,41 @@ class ParserTests: XCTestCase {
             XCTAssertEqual(results.count, 1)
             
             let result = results[0]
-            XCTAssertEqual(result.numberOfRanges, 3)
+            XCTAssertEqual(result.numberOfRanges, 8)
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text](path/to/image.png)")
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text")
             XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "path/to/image.png")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(7)), "path/to/image.png")
+        }
+        
+        do { // twitter
+            let string = "![alternative text](twitter:471592142565957632)"
+            
+            let results = Tweet.imagePattern.matches(in: string)
+            XCTAssertEqual(results.count, 1)
+            
+            let result = results[0]
+            XCTAssertEqual(result.numberOfRanges, 8)
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text](twitter:471592142565957632)")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "twitter:471592142565957632")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "twitter:471592142565957632")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "471592142565957632")
+        }
+        
+        do { // gist
+            let string = "![alternative text](gist:aa5a315d61ae9438b18d)"
+            
+            let results = Tweet.imagePattern.matches(in: string)
+            XCTAssertEqual(results.count, 1)
+            
+            let result = results[0]
+            XCTAssertEqual(result.numberOfRanges, 8)
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text](gist:aa5a315d61ae9438b18d)")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "gist:aa5a315d61ae9438b18d")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "gist:aa5a315d61ae9438b18d")
+            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(6)), "aa5a315d61ae9438b18d")
         }
         
         do {
@@ -399,18 +431,20 @@ class ParserTests: XCTestCase {
 
             do {
                 let result = results[0]
-                XCTAssertEqual(result.numberOfRanges, 3)
+                XCTAssertEqual(result.numberOfRanges, 8)
                 XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text 1](path/to/image1.png)")
                 XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text 1")
                 XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "path/to/image1.png")
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(7)), "path/to/image1.png")
             }
             
             do {
                 let result = results[1]
-                XCTAssertEqual(result.numberOfRanges, 3)
+                XCTAssertEqual(result.numberOfRanges, 8)
                 XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text 2](path/to/image2.png)")
                 XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text 2")
                 XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "path/to/image2.png")
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(7)), "path/to/image2.png")
             }
         }
         
