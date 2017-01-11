@@ -1,7 +1,7 @@
 import Foundation
 
 internal struct Gist {
-    static func createGist(description: String, code: Code, accessToken: String, callback: @escaping (() throws -> URL) -> ()) {
+    static func createGist(description: String, code: Code, accessToken: String, callback: @escaping (() throws -> String) -> ()) {
         let session = URLSession(configuration: .ephemeral)
         var request = URLRequest(url: URL(string: "https://api.github.com/gists")!)
         request.httpMethod = "POST"
@@ -22,11 +22,11 @@ internal struct Gist {
                 if let error = error { throw error }
                 
                 let responseJson: [String: Any] = try! JSONSerialization.jsonObject(with: responseData!) as! [String: Any] // never fails
-                guard let urlString = responseJson["html_url"] as? String else {
+                guard let id = responseJson["id"] as? String else {
                     throw GistError(json: responseJson)
                 }
                 
-                return URL(string: urlString)!
+                return id
             }
         }
         task.resume()
