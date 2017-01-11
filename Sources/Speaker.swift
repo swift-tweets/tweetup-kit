@@ -85,8 +85,25 @@ public struct Speaker {
     }
     
     public func resolveCode(of tweet: Tweet, callback: @escaping (() throws -> Tweet) -> ()) {
-        // TODO
-        fatalError("Unimplemented.")
+        guard case let .some(.code(code)) = tweet.attachment else {
+            callback {
+                tweet
+            }
+            return
+        }
+        guard let githubToken = githubToken else {
+            callback {
+                throw SpeakerError.noGithubToken
+            }
+            return
+        }
+        
+        Gist.createGist(description: tweet.body, code: code, accessToken: githubToken) { getId in
+            callback {
+                let id = try getId()
+                return try Tweet(body: "\(tweet.body)\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id))))
+            }
+        }
     }
     
     public func resolveGists(of tweets: [Tweet], callback: @escaping (() throws -> [Tweet]) -> ()) {
@@ -101,4 +118,5 @@ public struct Speaker {
 
 public enum SpeakerError: Error {
     case noTwitterCredential
+    case noGithubToken
 }

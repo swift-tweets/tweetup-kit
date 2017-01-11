@@ -9,29 +9,11 @@ class GistTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        let path = #file.deletingLastPathComponent.deletingLastPathComponent.appendingPathComponent("github.json")
-        let data: Data
         do {
-            data = try Data(contentsOf: URL(fileURLWithPath: path))
-        } catch {
-            XCTFail("Put a file at \(path), which contains tokens of Github for the tests in the format same as github-template.json in the same directory.")
-            return
-        }
-        
-        let json: [String: Any]
-        do {
-            json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            self.accessToken = try loadGithubToken()
         } catch let error {
             XCTFail("\(error)")
-            return
         }
-        
-        guard let accessToken = json["accessToken"] as? String else {
-            XCTFail("Lack of `accessToken` in \(path).")
-            return
-        }
-
-        self.accessToken = accessToken
     }
     
     override func tearDown() {
@@ -45,13 +27,13 @@ class GistTests: XCTestCase {
         do {
             let expectation = self.expectation(description: "")
             
-            Gist.createGist(description: "", code: Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")"), accessToken: accessToken) { getUrl in
+            Gist.createGist(description: "", code: Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")"), accessToken: accessToken) { getId in
                 defer {
                     expectation.fulfill()
                 }
                 do {
-                    let url = try getUrl()
-                    XCTAssertTrue(try! NSRegularExpression(pattern: "^https://gist.github.com/[0-9a-f]+$").matches(in: url.description).count == 1, url.description)
+                    let id = try getId()
+                    XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9a-f]+$").matches(in: id.description).count == 1, id.description)
                 } catch let error {
                     XCTFail("\(error)")
                 }
@@ -63,12 +45,12 @@ class GistTests: XCTestCase {
         do { // illegal access token
             let expectation = self.expectation(description: "")
             
-            Gist.createGist(description: "", code: Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")"), accessToken: "") { getUrl in
+            Gist.createGist(description: "", code: Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")"), accessToken: "") { getId in
                 defer {
                     expectation.fulfill()
                 }
                 do {
-                    _ = try getUrl()
+                    _ = try getId()
                     XCTFail()
                 } catch let error as GistError {
                     guard let message = (error.json as? [String: Any])?["message"] as? String else {
@@ -84,4 +66,22 @@ class GistTests: XCTestCase {
             waitForExpectations(timeout: 10.0, handler: nil)
         }
     }
+}
+
+func loadGithubToken() throws -> String {
+    let path = #file.deletingLastPathComponent.deletingLastPathComponent.appendingPathComponent("github.json")
+    let data: Data
+    do {
+        data = try Data(contentsOf: URL(fileURLWithPath: path))
+    } catch {
+        throw GeneralError(message: "Put a file at \(path), which contains tokens of Github for the tests in the format same as github-template.json in the same directory.")
+    }
+    
+    let json: [String: Any] = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+    
+    guard let accessToken = json["accessToken"] as? String else {
+        throw GeneralError(message: "Lack of `accessToken` in \(path).")
+    }
+    
+    return accessToken
 }

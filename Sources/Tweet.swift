@@ -76,6 +76,25 @@ extension Tweet: CustomStringConvertible {
     }
 }
 
+extension Tweet: Equatable {
+    public static func ==(lhs: Tweet, rhs: Tweet) -> Bool {
+        return lhs.body == rhs.body && lhs.attachment == rhs.attachment
+    }
+}
+
+extension Tweet.Attachment: Equatable {
+    public static func ==(lhs: Tweet.Attachment, rhs: Tweet.Attachment) -> Bool {
+        switch (lhs, rhs) {
+        case let (.image(image1), .image(image2)):
+            return image1 == image2
+        case let (.code(code1), .code(code2)):
+            return code1 == code2
+        case (_, _):
+            return false
+        }
+    }
+}
+
 public enum TweetInitializationError: Error {
     case empty
     case tooLong(String, Tweet.Attachment?, Int)

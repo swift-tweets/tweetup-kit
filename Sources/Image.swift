@@ -15,6 +15,12 @@ extension Image: CustomStringConvertible {
     }
 }
 
+extension Image: Equatable {
+    public static func ==(lhs: Image, rhs: Image) -> Bool {
+        return lhs.alternativeText == rhs.alternativeText && lhs.source == rhs.source
+    }
+}
+
 extension Image.Source: CustomStringConvertible {
     public var description: String {
         switch self {
