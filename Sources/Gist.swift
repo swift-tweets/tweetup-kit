@@ -2,7 +2,7 @@ import Foundation
 
 internal struct Gist {
     static func createGist(description: String, code: Code, accessToken: String, callback: @escaping (() throws -> String) -> ()) {
-        let session = URLSession(configuration: .ephemeral)
+        let session = URLSession(configuration: .ephemeral, delegate: nil, delegateQueue: Async.sessionQueue)
         var request = URLRequest(url: URL(string: "https://api.github.com/gists")!)
         request.httpMethod = "POST"
         request.addValue("token \(accessToken)", forHTTPHeaderField: "Authorization")

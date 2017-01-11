@@ -12,7 +12,7 @@ internal struct Twitter {
             oauthTokenSecret: credential.oauthTokenSecret,
             version: .oauth1
         )
-        client.sessionFactory.queue = OAuth.sessionQueue
+        client.sessionFactory.queue = Async.sessionQueue
         
         _ = client.post(
             "https://api.twitter.com/1.1/statuses/update.json",

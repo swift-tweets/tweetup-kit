@@ -1,3 +1,5 @@
+import Foundation
+
 internal func repeated<T, R>(operation: @escaping (T, @escaping (() throws -> R) -> ()) -> ()) -> ([T], @escaping (() throws -> [R]) -> ()) -> () {
     return { values, callback in
         _repeat(operation: operation, for: values[0..<values.count], callback: callback)
@@ -36,4 +38,9 @@ internal func flatten<T, U, R>(_ operation1: @escaping (T, @escaping (() throws 
             }
         }
     }
+}
+
+internal struct Async {
+    internal static let sessionQueue = OperationQueue()
+    internal static let executionQueue = DispatchQueue(label: "TweetupKit")
 }

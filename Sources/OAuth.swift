@@ -1,14 +1,12 @@
 import Foundation
 
 internal struct OAuth {
-    internal static let sessionQueue = OperationQueue()
-    private static let executionQueue = DispatchQueue(label: "TweetupKit")
     internal static let executionContext: (@escaping () -> Void) -> Void = { block in
         print("in executionContext before")
         defer {
             print("in executionContext after")
         }
-        return executionQueue.async(execute: block)
+        return Async.executionQueue.async(execute: block)
     }
 }
 
