@@ -89,9 +89,20 @@ extension Code {
 extension Image {
     fileprivate init(string: String, matchingResult: NSTextCheckingResult) {
         let string = string as NSString
+        let source: Source
+        if let range = matchingResult.validRangeAt(4) {
+            source = .twitter(string.substring(with: range))
+        } else if let range = matchingResult.validRangeAt(6) {
+            source = .gist(string.substring(with: range))
+        } else if let range = matchingResult.validRangeAt(7) {
+            source = .local(string.substring(with: range))
+        } else {
+            fatalError("Never reaches here.")
+        }
+        
         self.init(
             alternativeText: string.substring(with: matchingResult.rangeAt(1)),
-            path: string.substring(with: matchingResult.rangeAt(2))
+            source: source
         )
     }
 }

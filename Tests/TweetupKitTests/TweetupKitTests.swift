@@ -13,7 +13,7 @@ class TweetupKitTests: XCTestCase {
             let tweet = tweets[5]
             switch tweet.attachment {
             case let .some(.image(image)):
-                XCTAssertEqual(image.path, "path/to/image/file.png")
+                XCTAssertEqual(image.source, .local("path/to/image/file.png"))
             default:
                 XCTFail()
             }

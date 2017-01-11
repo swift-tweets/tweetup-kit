@@ -33,7 +33,7 @@ class ParserTests: XCTestCase {
                 switch tweet.attachment {
                 case let .some(.image(image)):
                     XCTAssertEqual(image.alternativeText, "")
-                    XCTAssertEqual(image.path, "path/to/image.png")
+                    XCTAssertEqual(image.source, .local("path/to/image.png"))
                 default:
                     XCTFail()
                 }
@@ -70,7 +70,7 @@ class ParserTests: XCTestCase {
                 switch tweet.attachment {
                 case let .some(.image(image)):
                     XCTAssertEqual(image.alternativeText, "")
-                    XCTAssertEqual(image.path, "path/to/image.png")
+                    XCTAssertEqual(image.source, .local("path/to/image.png"))
                 default:
                     XCTFail()
                 }
@@ -151,7 +151,7 @@ class ParserTests: XCTestCase {
                 switch tweet.attachment {
                 case let .some(.image(image)):
                     XCTAssertEqual(image.alternativeText, "")
-                    XCTAssertEqual(image.path, "path/to/image.png")
+                    XCTAssertEqual(image.source, .local("path/to/image.png"))
                 default:
                     XCTFail()
                 }
@@ -217,7 +217,7 @@ class ParserTests: XCTestCase {
             switch tweet.attachment {
             case let .some(.image(image)):
                 XCTAssertEqual(image.alternativeText, "alternative text")
-                XCTAssertEqual(image.path, "path/to/image.png")
+                XCTAssertEqual(image.source, .local("path/to/image.png"))
             default:
                 XCTFail()
             }
@@ -231,7 +231,7 @@ class ParserTests: XCTestCase {
             } catch let TweetParseError.nonTailAttachment(rawString, .image(image)) {
                 XCTAssertEqual(rawString, string)
                 XCTAssertEqual(image.alternativeText, "alternative text")
-                XCTAssertEqual(image.path, "path/to/image.png")
+                XCTAssertEqual(image.source, .local("path/to/image.png"))
             } catch _ {
                 XCTFail()
             }
@@ -256,7 +256,7 @@ class ParserTests: XCTestCase {
                 switch attachments[1] {
                 case let .image(image):
                     XCTAssertEqual(image.alternativeText, "alternative text")
-                    XCTAssertEqual(image.path, "path/to/image.png")
+                    XCTAssertEqual(image.source, .local("path/to/image.png"))
                 default:
                     XCTFail()
                 }

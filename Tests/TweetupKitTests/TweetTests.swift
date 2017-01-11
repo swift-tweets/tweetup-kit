@@ -71,7 +71,7 @@ class TweetTests: XCTestCase {
         }
         
         do {
-            let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!", attachment: .image(Image(alternativeText: "", path: "path/to/image.png")))
+            let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!", attachment: .image(Image(alternativeText: "", source: .local("path/to/image.png"))))
             let result = tweet.description
             XCTAssertEqual(result, "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)")
         }
@@ -127,7 +127,7 @@ class TweetTests: XCTestCase {
         }
         
         do { // with a `.image`
-            let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!", attachment: .image(Image(alternativeText: "", path: "path/to/image.png")))
+            let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!", attachment: .image(Image(alternativeText: "", source: .local("path/to/image.png"))))
             let result = tweet.length
             XCTAssertEqual(result, 57)
         }
