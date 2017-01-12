@@ -2,7 +2,7 @@ import OAuthSwift
 import Foundation
 
 internal struct Twitter {
-    static func update(status: String, mediaId: String? = nil, credential: OAuthCredential, callback: @escaping (() throws -> String) -> ()) {
+    static func update(status: String, mediaId: String? = nil, credential: OAuthCredential, callback: @escaping (() throws -> (String, String)) -> ()) {
         OAuthSwiftHTTPRequest.executionContext = OAuth.executionContext
         
         let client = OAuthSwiftClient(credential: credential)
@@ -21,7 +21,7 @@ internal struct Twitter {
             callback: callback
         ) { response in
             let json = try! JSONSerialization.jsonObject(with: response.data) as! [String: Any] // `!` never fails
-            return json["id_str"] as! String // `!` never fails
+            return (json["id_str"] as! String, (json["user"] as! [String: Any])["screen_name"] as! String) // `!` never fails
         }
     }
     

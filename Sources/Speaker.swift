@@ -16,7 +16,7 @@ public struct Speaker {
             do {
                 let ids = try getIds()
                 assert(ids.count == tweets.count)
-                for (id, tweet) in zip(ids, tweets) {
+                for (idAndScreenName, tweet) in zip(ids, tweets) {
                     // TODO
                     fatalError("Unimplemented.")
                 }
@@ -28,11 +28,11 @@ public struct Speaker {
         }
     }
     
-    public func post(tweets: [Tweet], with interval: TimeInterval?, callback: @escaping (() throws -> ([String])) -> ()) {
+    public func post(tweets: [Tweet], with interval: TimeInterval?, callback: @escaping (() throws -> ([(String, String)])) -> ()) {
         repeated(operation: post, interval: interval)(tweets, callback)
     }
     
-    public func post(tweet: Tweet, callback: @escaping (() throws -> String) -> ()) {
+    public func post(tweet: Tweet, callback: @escaping (() throws -> (String, String)) -> ()) {
         guard let twitterCredential = twitterCredential else {
             callback {
                 throw SpeakerError.noTwitterCredential

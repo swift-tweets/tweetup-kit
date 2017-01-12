@@ -32,7 +32,7 @@ class TwitterTests: XCTestCase {
                     expectation.fulfill()
                 }
                 do {
-                    let id = try getId()
+                    let (id, _) = try getId()
                     XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
                 } catch let error {
                     XCTFail("\(error)")
@@ -54,7 +54,7 @@ class TwitterTests: XCTestCase {
                             expectation.fulfill()
                         }
                         do {
-                            let id = try getId()
+                            let (id, _) = try getId()
                             XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
                         } catch let error {
                             XCTFail("\(error)")

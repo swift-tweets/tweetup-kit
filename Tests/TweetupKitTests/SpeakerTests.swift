@@ -42,9 +42,9 @@ class SpeakerTests: XCTestCase {
                     let ids = try getIds()
                     XCTAssertEqual(ids.count, 3)
                     let idPattern = try! NSRegularExpression(pattern: "^[0-9]+$")
-                    XCTAssertTrue(idPattern.matches(in: ids[0]).count == 1)
-                    XCTAssertTrue(idPattern.matches(in: ids[1]).count == 1)
-                    XCTAssertTrue(idPattern.matches(in: ids[2]).count == 1)
+                    XCTAssertTrue(idPattern.matches(in: ids[0].0).count == 1)
+                    XCTAssertTrue(idPattern.matches(in: ids[1].0).count == 1)
+                    XCTAssertTrue(idPattern.matches(in: ids[2].0).count == 1)
                 } catch let error {
                     XCTFail("\(error)")
                 }
