@@ -75,4 +75,25 @@ class TwitterTests: XCTestCase {
         
         waitForExpectations(timeout: 10.0, handler: nil)
     }
+    
+    func testUploadMedia() {
+        guard let credential = credential else { return }
+        
+        let expectation = self.expectation(description: "")
+        
+        let data = try! Data(contentsOf: URL(string: "https://avatars2.githubusercontent.com/u/22500431?v=3&s=200")!)
+        Twitter.upload(media: data, credential: credential) { getId in
+            defer {
+                expectation.fulfill()
+            }
+            do {
+                let id = try getId()
+                XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
+            } catch let error {
+                XCTFail("\(error)")
+            }
+        }
+        
+        waitForExpectations(timeout: 30.0, handler: nil)
+    }
 }
