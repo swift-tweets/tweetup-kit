@@ -52,14 +52,14 @@ class GistTests: XCTestCase {
                 do {
                     _ = try getId()
                     XCTFail()
-                } catch let error as GistError {
+                } catch let error as APIError {
                     guard let message = (error.json as? [String: Any])?["message"] as? String else {
                         XCTFail("\(error.json)")
                         return
                     }
                     XCTAssertEqual(message, "Bad credentials")
-                } catch {
-                    XCTFail()
+                } catch let error {
+                    XCTFail("\(error)")
                 }
             }
             

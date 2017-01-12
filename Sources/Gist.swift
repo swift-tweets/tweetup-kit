@@ -20,10 +20,15 @@ internal struct Gist {
         let task = session.uploadTask(with: request, from: data) { responseData, response, error in
             callback {
                 if let error = error { throw error }
-                
+                guard let response = response as? HTTPURLResponse else {
+                    fatalError("Never reaches here.")
+                }
                 let responseJson: [String: Any] = try! JSONSerialization.jsonObject(with: responseData!) as! [String: Any] // never fails
+                guard response.statusCode == 201 else {
+                    throw APIError(response: response, json: responseJson)
+                }
                 guard let id = responseJson["id"] as? String else {
-                    throw GistError(json: responseJson)
+                    fatalError("Never reaches here.")
                 }
                 
                 return id
@@ -31,8 +36,4 @@ internal struct Gist {
         }
         task.resume()
     }
-}
-
-internal struct GistError: Error {
-    let json: Any
 }
