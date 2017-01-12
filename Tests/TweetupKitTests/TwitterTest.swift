@@ -24,21 +24,49 @@ class TwitterTests: XCTestCase {
     func testUpdateStatus() {
         guard let credential = credential else { return }
         
-        let expectation = self.expectation(description: "")
-        
-        Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", credential: credential) { getId in
-            defer {
-                expectation.fulfill()
+        do {
+            let expectation = self.expectation(description: "")
+            
+            Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", credential: credential) { getId in
+                defer {
+                    expectation.fulfill()
+                }
+                do {
+                    let id = try getId()
+                    XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
+                } catch let error {
+                    XCTFail("\(error)")
+                }
             }
-            do {
-                let id = try getId()
-                XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
-            } catch let error {
-                XCTFail("\(error)")
-            }
+            
+            waitForExpectations(timeout: 10.0, handler: nil)
         }
         
-        waitForExpectations(timeout: 10.0, handler: nil)
+        do {
+            let expectation = self.expectation(description: "")
+            
+            let data = try! Data(contentsOf: URL(fileURLWithPath: imagePath))
+            Twitter.upload(media: data, credential: credential) { getMediaId in
+                do {
+                    let mediaId = try getMediaId()
+                    Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", mediaId: mediaId, credential: credential) { getId in
+                        defer {
+                            expectation.fulfill()
+                        }
+                        do {
+                            let id = try getId()
+                            XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
+                        } catch let error {
+                            XCTFail("\(error)")
+                        }
+                    }
+                } catch let error {
+                    XCTFail("\(error)")
+                }
+            }
+            
+            waitForExpectations(timeout: 40.0, handler: nil)
+        }
     }
     
     func testUploadMedia() {

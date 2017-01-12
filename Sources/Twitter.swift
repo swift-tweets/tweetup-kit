@@ -2,17 +2,22 @@ import OAuthSwift
 import Foundation
 
 internal struct Twitter {
-    static func update(status: String, credential: OAuthCredential, callback: @escaping (() throws -> String) -> ()) {
+    static func update(status: String, mediaId: String? = nil, credential: OAuthCredential, callback: @escaping (() throws -> String) -> ()) {
         OAuthSwiftHTTPRequest.executionContext = OAuth.executionContext
         
         let client = OAuthSwiftClient(credential: credential)
         client.sessionFactory.queue = Async.sessionQueue
+
+        var parameters = [
+            "status": status
+        ]
+        if let mediaId = mediaId {
+            parameters["media_ids"] = mediaId
+        }
         
         _ = client.post(
             "https://api.twitter.com/1.1/statuses/update.json",
-            parameters: [
-                "status": status
-            ],
+            parameters: parameters,
             success: { response in
                 callback {
                     let json = try! JSONSerialization.jsonObject(with: response.data) as! [String: Any] // `!` never fails
