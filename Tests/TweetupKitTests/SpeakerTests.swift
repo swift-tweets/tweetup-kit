@@ -24,6 +24,40 @@ class SpeakerTests: XCTestCase {
         super.tearDown()
     }
     
+    func testPostTweets() {
+        do {
+            let speaker = Speaker(twitterCredential: twitterCredential, githubToken: githubToken)
+            
+            let start = Date.timeIntervalSinceReferenceDate
+            
+            let expectation = self.expectation(description: "")
+
+            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n---\n\nUp above the world so high,\nLike a diamond in the sky. \(start)\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n![](\(imagePath))" // includes `start` to avoid duplicate tweets
+            let tweets = try! Tweet.tweets(from: string)
+            speaker.post(tweets: tweets, with: 30.0) { getIds in
+                defer {
+                    expectation.fulfill()
+                }
+                do {
+                    let ids = try getIds()
+                    XCTAssertEqual(ids.count, 3)
+                    let idPattern = try! NSRegularExpression(pattern: "^[0-9]+$")
+                    XCTAssertTrue(idPattern.matches(in: ids[0]).count == 1)
+                    XCTAssertTrue(idPattern.matches(in: ids[1]).count == 1)
+                    XCTAssertTrue(idPattern.matches(in: ids[2]).count == 1)
+                } catch let error {
+                    XCTFail("\(error)")
+                }
+            }
+
+            waitForExpectations(timeout: 89.0, handler: nil)
+            
+            let end = Date.timeIntervalSinceReferenceDate
+            
+            XCTAssertGreaterThan(end - start, 60.0)
+        }
+    }
+    
     func testResolveImages() {
         do {
             let speaker = Speaker(twitterCredential: twitterCredential)

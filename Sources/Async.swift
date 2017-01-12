@@ -76,7 +76,7 @@ internal func flatten<T, U, R>(_ operation1: @escaping (T, @escaping (() throws 
 
 internal func waiting<T, R>(operation: @escaping (T, @escaping (() throws -> R) -> ()) -> (), with interval: TimeInterval) -> (T, @escaping (() throws -> R) -> ()) -> () {
     let wait: ((), @escaping (() throws -> ()) -> ()) -> () = { _, completion in
-        Async.executionQueue.asyncAfter(deadline: .now() + .milliseconds(Int(interval * 1000.0))) {
+        Async.waitQueue.asyncAfter(deadline: .now() + .milliseconds(Int(interval * 1000.0))) {
             completion {
                 ()
             }
@@ -152,4 +152,5 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
 internal struct Async {
     internal static let sessionQueue = OperationQueue()
     internal static let executionQueue = DispatchQueue(label: "TweetupKit")
+    fileprivate static let waitQueue = DispatchQueue(label: "TweetupKit.wait")
 }

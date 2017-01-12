@@ -11,8 +11,8 @@ public struct Speaker {
         self.qiitaToken = qiitaToken
     }
     
-    public func talk(title: String, tweets: [Tweet], callback: @escaping (() throws -> URL) -> ()) {
-        post(tweets: tweets) { getIds in
+    public func talk(title: String, tweets: [Tweet], interval: TimeInterval?, callback: @escaping (() throws -> URL) -> ()) {
+        post(tweets: tweets, with: interval) { getIds in
             do {
                 let ids = try getIds()
                 assert(ids.count == tweets.count)
@@ -28,8 +28,8 @@ public struct Speaker {
         }
     }
     
-    public func post(tweets: [Tweet], callback: @escaping (() throws -> ([String])) -> ()) {
-        repeated(operation: post)(tweets, callback)
+    public func post(tweets: [Tweet], with interval: TimeInterval?, callback: @escaping (() throws -> ([String])) -> ()) {
+        repeated(operation: post, interval: interval)(tweets, callback)
     }
     
     public func post(tweet: Tweet, callback: @escaping (() throws -> String) -> ()) {
@@ -39,8 +39,10 @@ public struct Speaker {
             }
             return
         }
-        
-        let resolve = flatten(flatten(resolveCode, resolveGist), resolveImage)
+  
+        // TODO
+        // let resolve = flatten(flatten(resolveCode, resolveGist), resolveImage)
+        let resolve = flatten(resolveCode, resolveImage)
         resolve(tweet) { getTweet in
             do {
                 let tweet = try getTweet()
@@ -52,6 +54,9 @@ public struct Speaker {
                         switch image.source {
                         case let .twitter(id):
                             mediaId = id
+                        case .gist(_):
+                            // TODO
+                            mediaId = nil
                         case _:
                             fatalError("Never reaches here.")
                         }
