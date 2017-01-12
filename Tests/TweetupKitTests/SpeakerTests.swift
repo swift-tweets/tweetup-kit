@@ -26,11 +26,11 @@ class SpeakerTests: XCTestCase {
     
     func testResolveImages() {
         do {
-            let speaker = Speaker(githubToken: githubToken)
+            let speaker = Speaker(twitterCredential: twitterCredential)
             
             let expectation = self.expectation(description: "")
             
-            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n![alternative text](\(imagePath))\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)\n\n---\n\nWhen the blazing sun is gone,\nWhen he nothing shines upon,\n\n![alternative text 1](\(imagePath))\n\n---\n\nThen you show your little light,\nTwinkle, twinkle, all the night.\n\n![alternative text 2](\(imagePath))\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![alternative text 3](\(imagePath))\n\n"
+            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](\(imagePath))\n\n---\n\nWhen the blazing sun is gone,\nWhen he nothing shines upon,\n\n![alternative text 1](\(imagePath))\n\n---\n\nThen you show your little light,\nTwinkle, twinkle, all the night.\n\n![alternative text 2](\(imagePath))\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![alternative text 3](\(imagePath))\n\n"
             let tweets = try! Tweet.tweets(from: string)
             speaker.resolveImages(of: tweets) { getTweets in
                 defer {
@@ -48,17 +48,17 @@ class SpeakerTests: XCTestCase {
                     
                     do {
                         let result = results[1]
+                        XCTAssertEqual(result, tweets[1])
+                    }
+                    
+                    do {
+                        let result = results[2]
                         
                         guard case let .some(.image(image)) = result.attachment, case let .twitter(id) = image.source else {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .twitter(id)))))
-                    }
-                    
-                    do {
-                        let result = results[2]
-                        XCTAssertEqual(result, tweets[2])
+                        XCTAssertEqual(result, try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!", attachment: .image(Image(alternativeText: "", source: .twitter(id)))))
                     }
                     
                     do {
@@ -84,7 +84,7 @@ class SpeakerTests: XCTestCase {
                     do {
                         let result = results[5]
                         
-                        guard case let .some(.image(image)) = result.attachment, case let .gist(id) = image.source else {
+                        guard case let .some(.image(image)) = result.attachment, case let .twitter(id) = image.source else {
                             XCTFail()
                             return
                         }
