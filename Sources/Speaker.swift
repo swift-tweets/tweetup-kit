@@ -45,13 +45,13 @@ public struct Speaker {
             do {
                 let tweet = try getTweet()
                 let status = tweet.body
+                let mediaId: String?
                 if let attachment = tweet.attachment {
                     switch attachment {
                     case let .image(image):
                         switch image.source {
                         case let .twitter(id):
-                            // TODO
-                            fatalError("Unimplemented.")
+                            mediaId = id
                         case _:
                             fatalError("Never reaches here.")
                         }
@@ -59,10 +59,11 @@ public struct Speaker {
                         fatalError("Never reaches here.")
                     }
                 } else {
-                    Twitter.update(status: status, credential: twitterCredential) { getId in
-                        callback {
-                            try getId()
-                        }
+                    mediaId = nil
+                }
+                Twitter.update(status: status, mediaId: mediaId, credential: twitterCredential) { getId in
+                    callback {
+                        try getId()
                     }
                 }
             } catch let error {
