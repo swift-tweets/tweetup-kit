@@ -44,10 +44,6 @@ internal struct Twitter {
     }
 }
 
-internal struct TwitterError: Error {
-    let message: String
-}
-
 extension OAuthSwiftClient {
     fileprivate convenience init(credential: OAuthCredential) {
         self.init(
@@ -70,7 +66,8 @@ extension OAuthSwiftClient {
                 guard response.response.statusCode == 200 else {
                     let httpResponse = response.response
                     callback {
-                        throw NetworkError(statusCode: httpResponse.statusCode, response: httpResponse, message: String(data: response.data, encoding: .utf8))
+                        let json = try! JSONSerialization.jsonObject(with: response.data, options: []) // `!` never fails
+                        throw APIError(response: httpResponse, json: json)
                     }
                     return
                 }
@@ -81,7 +78,7 @@ extension OAuthSwiftClient {
             },
             failure: { error in
                 callback {
-                    throw TwitterError(message: "\(error)")
+                    throw error
                 }
             }
         )
