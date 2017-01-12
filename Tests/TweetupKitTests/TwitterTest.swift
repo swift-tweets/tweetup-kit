@@ -9,46 +9,11 @@ class TwitterTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        let path = #file.deletingLastPathComponent.deletingLastPathComponent.appendingPathComponent("twitter.json")
-        let data: Data
         do {
-            data = try Data(contentsOf: URL(fileURLWithPath: path))
-        } catch {
-            XCTFail("Put a file at \(path), which contains tokens of Twitter for the tests in the format same as twitter-template.json in the same directory.")
-            return
-        }
-        
-        let json: [String: Any]
-        do {
-            json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            credential = try loadTwitterCredential()
         } catch let error {
             XCTFail("\(error)")
-            return
         }
-        
-        guard let consumerKey = json["consumerKey"] as? String else {
-            XCTFail("Lack of `consumerKey` in \(path).")
-            return
-        }
-        guard let consumerSecret = json["consumerSecret"] as? String else {
-            XCTFail("Lack of `consumerSecret` in \(path).")
-            return
-        }
-        guard let oauthToken = json["oauthToken"] as? String else {
-            XCTFail("Lack of `oauthToken` in \(path).")
-            return
-        }
-        guard let oauthTokenSecret = json["oauthTokenSecret"] as? String else {
-            XCTFail("Lack of `oauthTokenSecret` in \(path).")
-            return
-        }
-        
-        credential = OAuthCredential(
-            consumerKey: consumerKey,
-            consumerSecret: consumerSecret,
-            oauthToken: oauthToken,
-            oauthTokenSecret: oauthTokenSecret
-        )
     }
     
     override func tearDown() {
@@ -81,7 +46,7 @@ class TwitterTests: XCTestCase {
         
         let expectation = self.expectation(description: "")
         
-        let data = try! Data(contentsOf: URL(string: "https://avatars2.githubusercontent.com/u/22500431?v=3&s=200")!)
+        let data = try! Data(contentsOf: URL(fileURLWithPath: imagePath))
         Twitter.upload(media: data, credential: credential) { getId in
             defer {
                 expectation.fulfill()
@@ -97,3 +62,37 @@ class TwitterTests: XCTestCase {
         waitForExpectations(timeout: 30.0, handler: nil)
     }
 }
+
+func loadTwitterCredential() throws -> OAuthCredential {
+    let path = #file.deletingLastPathComponent.deletingLastPathComponent.appendingPathComponent("twitter.json")
+    let data: Data
+    do {
+        data = try Data(contentsOf: URL(fileURLWithPath: path))
+    } catch {
+        throw GeneralError(message: "Put a file at \(path), which contains tokens of Twitter for the tests in the format same as twitter-template.json in the same directory.")
+    }
+    
+    let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+    
+    guard let consumerKey = json["consumerKey"] as? String else {
+        throw GeneralError(message: "Lack of `consumerKey` in \(path).")
+    }
+    guard let consumerSecret = json["consumerSecret"] as? String else {
+        throw GeneralError(message: "Lack of `consumerSecret` in \(path).")
+    }
+    guard let oauthToken = json["oauthToken"] as? String else {
+        throw GeneralError(message: "Lack of `oauthToken` in \(path).")
+    }
+    guard let oauthTokenSecret = json["oauthTokenSecret"] as? String else {
+        throw GeneralError(message: "Lack of `oauthTokenSecret` in \(path).")
+    }
+    
+    return OAuthCredential(
+        consumerKey: consumerKey,
+        consumerSecret: consumerSecret,
+        oauthToken: oauthToken,
+        oauthTokenSecret: oauthTokenSecret
+    )
+}
+
+let imagePath = #file.deletingLastPathComponent.deletingLastPathComponent.appendingPathComponent("image.png")

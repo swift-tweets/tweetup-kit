@@ -76,8 +76,31 @@ public struct Speaker {
     }
     
     public func resolveImage(of tweet: Tweet, callback: @escaping (() throws -> Tweet) -> ()) {
-        // TODO
-        fatalError("Unimplemented.")
+        guard case let .some(.image(image)) = tweet.attachment, case let .local(path) = image.source else {
+            callback {
+                tweet
+            }
+            return
+        }
+        guard let twitterCredential = twitterCredential else {
+            callback {
+                throw SpeakerError.noTwitterCredential
+            }
+            return
+        }
+        
+        do {
+            Twitter.upload(media: try Data(contentsOf: URL(fileURLWithPath: path)), credential: twitterCredential) { getId in
+                callback {
+                    let id = try getId()
+                    return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .twitter(id))))
+                }
+            }
+        } catch let error {
+            callback {
+                throw error
+            }
+        }
     }
     
     public func resolveCodes(of tweets: [Tweet], callback: @escaping (() throws -> [Tweet]) -> ()) {
