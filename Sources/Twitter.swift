@@ -18,18 +18,11 @@ internal struct Twitter {
         _ = client.post(
             "https://api.twitter.com/1.1/statuses/update.json",
             parameters: parameters,
-            success: { response in
-                callback {
-                    let json = try! JSONSerialization.jsonObject(with: response.data) as! [String: Any] // `!` never fails
-                    return json["id_str"] as! String // `!` never fails
-                }
-            },
-            failure: { error in
-                callback {
-                    throw TwitterError(message: "\(error)")
-                }
-            }
-        )
+            callback: callback
+        ) { response in
+            let json = try! JSONSerialization.jsonObject(with: response.data) as! [String: Any] // `!` never fails
+            return json["id_str"] as! String // `!` never fails
+        }
     }
     
     static func upload(media: Data, credential: OAuthCredential, callback: @escaping (() throws -> String) -> ()) {
@@ -42,17 +35,12 @@ internal struct Twitter {
             "https://upload.twitter.com/1.1/media/upload.json",
             parameters: [
                 "media_data": media.base64EncodedString()
-            ], success: { response in
-                callback {
-                    let json = try! JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
-                    return json["media_id_string"] as! String // `!` never fails
-                }
-            }, failure: { error in
-                callback {
-                    throw TwitterError(message: "\(error)")
-                }
-            }
-        )
+            ],
+            callback: callback
+        ) { response in
+            let json = try! JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
+            return json["media_id_string"] as! String // `!` never fails
+        }
     }
 }
 
@@ -69,5 +57,34 @@ extension OAuthSwiftClient {
             oauthTokenSecret: credential.oauthTokenSecret,
             version: .oauth1
         )
+    }
+    
+    fileprivate func post<T>(_ url: String, parameters: OAuthSwift.Parameters, callback: @escaping (() throws -> T) -> (), completion: @escaping (OAuthSwiftResponse) throws -> (T)) -> OAuthSwiftRequestHandle? {
+        OAuthSwiftHTTPRequest.executionContext = OAuth.executionContext
+        sessionFactory.queue = Async.sessionQueue
+
+        return post(
+            url,
+            parameters: parameters,
+            success: { response in
+                guard response.response.statusCode == 200 else {
+                    let httpResponse = response.response
+                    callback {
+                        throw NetworkError(statusCode: httpResponse.statusCode, response: httpResponse, message: String(data: response.data, encoding: .utf8))
+                    }
+                    return
+                }
+                
+                callback {
+                    try completion(response)
+                }
+            },
+            failure: { error in
+                callback {
+                    throw TwitterError(message: "\(error)")
+                }
+            }
+        )
+
     }
 }
