@@ -19,3 +19,12 @@ public struct OAuthCredential {
         self.oauthTokenSecret = oauthTokenSecret
     }
 }
+
+extension OAuthCredential: Equatable {
+    public static func ==(lhs: OAuthCredential, rhs: OAuthCredential) -> Bool {
+        return lhs.consumerKey == rhs.consumerKey
+            && lhs.consumerSecret == rhs.consumerSecret
+            && lhs.oauthToken == rhs.oauthToken
+            && lhs.oauthTokenSecret == rhs.oauthTokenSecret
+    }
+}
