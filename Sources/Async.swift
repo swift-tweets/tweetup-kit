@@ -40,7 +40,7 @@ private func _repeat<T, R>(operation: @escaping (T, @escaping (() throws -> R) -
     }
     
     let waitingOperation: (T, @escaping (() throws -> R) -> ()) -> ()
-    if let interval = interval, values.startIndex > 0 {
+    if let interval = interval, values.count > 1 {
         waitingOperation = waiting(operation: operation, with: interval)
     } else {
         waitingOperation = operation
