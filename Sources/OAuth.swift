@@ -2,10 +2,6 @@ import Foundation
 
 internal struct OAuth {
     internal static let executionContext: (@escaping () -> Void) -> Void = { block in
-        print("in executionContext before")
-        defer {
-            print("in executionContext after")
-        }
         return Async.executionQueue.async(execute: block)
     }
 }
