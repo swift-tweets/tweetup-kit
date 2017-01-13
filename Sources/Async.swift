@@ -4,11 +4,11 @@ public func sync<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> (
     return  { value in
         var resultValue: R!
         var resultError: Error?
+        var waiting = true
         
-        let semaphore = DispatchSemaphore(value: 0)
         operation(value) { getValue in
             defer {
-                semaphore.signal()
+                waiting = false
             }
             do {
                 resultValue = try getValue()
@@ -16,7 +16,8 @@ public func sync<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> (
                 resultError = error
             }
         }
-        semaphore.wait()
+        let runLoop = RunLoop.current
+        while waiting && runLoop.run(mode: .defaultRunLoopMode, before: .distantFuture) { }
         
         if let error = resultError {
             throw error
