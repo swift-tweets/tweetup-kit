@@ -115,7 +115,7 @@ public struct Speaker {
     
     internal static func imagePath(_ path: String, from: String?) -> String {
         if let from = from, !path.hasPrefix("/") {
-            return (from as NSString).appendingPathComponent(path)
+            return from.appendingPathComponent(path)
         } else {
             return path
         }
