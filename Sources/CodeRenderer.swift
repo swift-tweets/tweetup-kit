@@ -66,18 +66,17 @@ extension CodeRenderer: WebFrameLoadDelegate {
         
         view.cacheDisplay(in: pageBox, to: imageRep)
         
-        let image = imageRep.cgImage!
-        let scale = CGFloat(image.width) / pageBox.size.width
+        let scale: CGFloat = 2.0
+        let codeBox2 = codeBox * scale
+        let pageBox2 = pageBox * scale
         
-        let x = codeBox.origin.x * scale
-        let y = codeBox.origin.y * scale
-        let width = Int(codeBox.size.width * scale)
-        let height = Int(codeBox.size.height * scale)
+        let width = Int(codeBox2.size.width)
+        let height = Int(codeBox2.size.height)
         var pixels = [UInt8](repeating: 0, count: width * height * 4)
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue)
         let context = CGContext(data: &pixels, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)!
-        let targetRect = CGRect(x: -x, y: y - CGFloat(image.height - height), width: CGFloat(image.width), height: CGFloat(image.height))
+        let targetRect = CGRect(x: -codeBox2.origin.x, y: codeBox2.origin.y - CGFloat(pageBox2.size.height - codeBox2.size.height), width: pageBox2.size.width, height: pageBox2.size.height)
         context.draw(imageRep.cgImage!, in: targetRect)
         
         let provider: CGDataProvider = CGDataProvider(data: Data(bytes: pixels) as CFData)!
@@ -95,4 +94,16 @@ extension CodeRenderer: WebFrameLoadDelegate {
 public enum CodeRendererError: Error {
     case writingFailed
     case illegalResponse
+}
+
+internal func *(rect: CGRect, k: CGFloat) -> CGRect {
+    return CGRect(origin: rect.origin * k, size: rect.size * k)
+}
+
+internal func *(point: CGPoint, k: CGFloat) -> CGPoint {
+    return CGPoint(x: point.x * k, y: point.y * k)
+}
+
+internal func *(size: CGSize, k: CGFloat) -> CGSize {
+    return CGSize(width: size.width * k, height: size.height * k)
 }
