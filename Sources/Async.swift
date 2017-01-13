@@ -27,6 +27,32 @@ public func sync<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> (
     }
 }
 
+public func _sync<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> ()) -> ())) -> (T) throws -> R {
+    return  { value in
+        var resultValue: R!
+        var resultError: Error?
+        
+        let semaphore = DispatchSemaphore(value: 0)
+        operation(value) { getValue in
+            defer {
+                semaphore.signal()
+            }
+            do {
+                resultValue = try getValue()
+            } catch let error {
+                resultError = error
+            }
+        }
+        semaphore.wait()
+        
+        if let error = resultError {
+            throw error
+        }
+        
+        return resultValue
+    }
+}
+
 internal func repeated<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> ()) -> ()), interval: TimeInterval? = nil) -> ([T], @escaping (() throws -> [R]) -> ()) -> () {
     return { values, callback in
         _repeat(operation: operation, for: values[0..<values.count], interval: interval, callback: callback)
