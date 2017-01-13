@@ -26,7 +26,7 @@ class SpeakerTests: XCTestCase {
     
     func testPostTweets() {
         do {
-            let speaker = Speaker(twitterCredential: twitterCredential, githubToken: githubToken)
+            let speaker = Speaker(twitterCredential: twitterCredential, githubToken: githubToken, outputDirectoryPath: imageDirectoryPath)
             
             let start = Date.timeIntervalSinceReferenceDate
             
@@ -255,7 +255,7 @@ class SpeakerTests: XCTestCase {
         }
         
         do { // base directory
-            let speaker = Speaker(twitterCredential: twitterCredential, baseDirectoryPath: (imagePath as NSString).deletingLastPathComponent)
+            let speaker = Speaker(twitterCredential: twitterCredential, baseDirectoryPath: imageDirectoryPath)
             
             do {
                 let expectation = self.expectation(description: "")

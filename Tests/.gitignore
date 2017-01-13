@@ -4,3 +4,5 @@
 /github.json
 /github-*.json
 !/github-template.json
+/*.png
+!/image.png

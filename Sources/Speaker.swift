@@ -5,12 +5,14 @@ public struct Speaker {
     public let githubToken: String?
     public let qiitaToken: String?
     public var baseDirectoryPath: String?
+    public var outputDirectoryPath: String?
 
-    public init(twitterCredential: OAuthCredential? = nil, githubToken: String? = nil, qiitaToken: String? = nil, baseDirectoryPath: String? = nil) {
+    public init(twitterCredential: OAuthCredential? = nil, githubToken: String? = nil, qiitaToken: String? = nil, baseDirectoryPath: String? = nil, outputDirectoryPath: String? = nil) {
         self.twitterCredential = twitterCredential
         self.githubToken = githubToken
         self.qiitaToken = qiitaToken
         self.baseDirectoryPath = baseDirectoryPath
+        self.outputDirectoryPath = outputDirectoryPath
     }
     
     public func talk(title: String, tweets: [Tweet], interval: TimeInterval?, callback: @escaping (() throws -> URL) -> ()) {
@@ -45,8 +47,7 @@ public struct Speaker {
         }
   
         // TODO
-        // let resolve = flatten(flatten(resolveCode, resolveGist), resolveImage)
-        let resolve = flatten(resolveCode, resolveImage)
+        let resolve = flatten(flatten(resolveCode, resolveGist), resolveImage)
         resolve(tweet) { getTweet in
             do {
                 let tweet = try getTweet()
@@ -153,12 +154,40 @@ public struct Speaker {
     }
     
     public func resolveGist(of tweet: Tweet, callback: @escaping (() throws -> Tweet) -> ()) {
-        // TODO
-        fatalError("Unimplemented.")
+        guard case let .some(.image(image)) = tweet.attachment, case let .gist(id) = image.source else {
+            callback {
+                tweet
+            }
+            return
+        }
+        guard let outputDirectoryPath = outputDirectoryPath else {
+            callback {
+                throw SpeakerError.noOutputDirectoryPath
+            }
+            return
+        }
+        
+        DispatchQueue.main.async {
+            do {
+                let url = "https://gist.github.com/\(id)"
+                let imagePath = outputDirectoryPath.appendingPathComponent("\(id).png")
+                let codeRenderer = CodeRenderer(url: url)
+                try codeRenderer.writeImage(to: Speaker.imagePath(imagePath, from: self.baseDirectoryPath))
+                
+                callback {
+                    return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .local(imagePath))))
+                }
+            } catch let error {
+                callback {
+                    throw error
+                }
+            }
+        }
     }
 }
 
 public enum SpeakerError: Error {
     case noTwitterCredential
     case noGithubToken
+    case noOutputDirectoryPath
 }
