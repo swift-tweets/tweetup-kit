@@ -123,4 +123,5 @@ func loadTwitterCredential() throws -> OAuthCredential {
     )
 }
 
-let imagePath = #file.deletingLastPathComponent.deletingLastPathComponent.appendingPathComponent("image.png")
+let imageDirectoryPath = #file.deletingLastPathComponent.deletingLastPathComponent
+let imagePath = imageDirectoryPath.appendingPathComponent("image.png")
