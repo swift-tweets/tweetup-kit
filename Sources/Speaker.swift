@@ -4,11 +4,13 @@ public struct Speaker {
     public let twitterCredential: OAuthCredential?
     public let githubToken: String?
     public let qiitaToken: String?
+    public var baseDirectoryPath: String?
 
-    public init(twitterCredential: OAuthCredential? = nil, githubToken: String? = nil, qiitaToken: String? = nil) {
+    public init(twitterCredential: OAuthCredential? = nil, githubToken: String? = nil, qiitaToken: String? = nil, baseDirectoryPath: String? = nil) {
         self.twitterCredential = twitterCredential
         self.githubToken = githubToken
         self.qiitaToken = qiitaToken
+        self.baseDirectoryPath = baseDirectoryPath
     }
     
     public func talk(title: String, tweets: [Tweet], interval: TimeInterval?, callback: @escaping (() throws -> URL) -> ()) {
@@ -17,6 +19,7 @@ public struct Speaker {
                 let ids = try getIds()
                 assert(ids.count == tweets.count)
                 for (idAndScreenName, tweet) in zip(ids, tweets) {
+                    let (id, screenName) = idAndScreenName
                     // TODO
                     fatalError("Unimplemented.")
                 }
@@ -96,7 +99,8 @@ public struct Speaker {
         }
         
         do {
-            Twitter.upload(media: try Data(contentsOf: URL(fileURLWithPath: path)), credential: twitterCredential) { getId in
+            let imagePath = Speaker.imagePath(path, from: baseDirectoryPath)
+            Twitter.upload(media: try Data(contentsOf: URL(fileURLWithPath: imagePath)), credential: twitterCredential) { getId in
                 callback {
                     let id = try getId()
                     return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .twitter(id))))
@@ -106,6 +110,14 @@ public struct Speaker {
             callback {
                 throw error
             }
+        }
+    }
+    
+    internal static func imagePath(_ path: String, from: String?) -> String {
+        if let from = from, !path.hasPrefix("/") {
+            return (from as NSString).appendingPathComponent(path)
+        } else {
+            return path
         }
     }
     

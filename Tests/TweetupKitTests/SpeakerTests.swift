@@ -225,6 +225,33 @@ class SpeakerTests: XCTestCase {
                 waitForExpectations(timeout: 10.0, handler: nil)
             }
         }
+        
+        do { // base directory
+            let speaker = Speaker(twitterCredential: twitterCredential, baseDirectoryPath: (imagePath as NSString).deletingLastPathComponent)
+            
+            do {
+                let expectation = self.expectation(description: "")
+                
+                let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .local("image.png"))))
+                speaker.resolveImage(of: tweet) { getTweet in
+                    defer {
+                        expectation.fulfill()
+                    }
+                    do {
+                        let result = try getTweet()
+                        guard case let .some(.image(image)) = result.attachment, case let .twitter(id) = image.source else {
+                            XCTFail()
+                            return
+                        }
+                        XCTAssertEqual(result, try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .twitter(id)))))
+                    } catch let error {
+                        XCTFail("\(error)")
+                    }
+                }
+                
+                waitForExpectations(timeout: 10.0, handler: nil)
+            }
+        }
     }
     
     func testResolveCodes() {
@@ -395,6 +422,36 @@ class SpeakerTests: XCTestCase {
                 
                 waitForExpectations(timeout: 10.0, handler: nil)
             }
+        }
+    }
+    
+    func testImagePath() {
+        do {
+            let path = "path/to/image"
+            let from = "base/dir"
+            let result = Speaker.imagePath(path, from: from)
+            XCTAssertEqual(result, "base/dir/path/to/image")
+        }
+        
+        do {
+            let path = "path/to/image"
+            let from = "/base/dir"
+            let result = Speaker.imagePath(path, from: from)
+            XCTAssertEqual(result, "/base/dir/path/to/image")
+        }
+        
+        do {
+            let path = "/path/to/image"
+            let from = "base/dir"
+            let result = Speaker.imagePath(path, from: from)
+            XCTAssertEqual(result, "/path/to/image")
+        }
+        
+        do {
+            let path = "path/to/image"
+            let from: String? = nil
+            let result = Speaker.imagePath(path, from: from)
+            XCTAssertEqual(result, "path/to/image")
         }
     }
 }
