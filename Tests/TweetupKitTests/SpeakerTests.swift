@@ -56,6 +56,34 @@ class SpeakerTests: XCTestCase {
             
             XCTAssertGreaterThan(end - start, 60.0)
         }
+        
+        do { // error duraing posting tweets
+            let speaker = Speaker(twitterCredential: twitterCredential, githubToken: githubToken)
+            
+            let start = Date.timeIntervalSinceReferenceDate
+            
+            let expectation = self.expectation(description: "")
+            
+            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n---\n\nUp above the world so high,\nLike a diamond in the sky. \(start)\n\n![](illegal/path/to/image.png)\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```" // includes `start` to avoid duplicate tweets
+            let tweets = try! Tweet.tweets(from: string)
+            speaker.post(tweets: tweets, with: 10.0) { getIds in
+                defer {
+                    expectation.fulfill()
+                }
+                do {
+                    _ = try getIds()
+                    XCTFail()
+                } catch let error {
+                    print(error)
+                }
+            }
+            
+            waitForExpectations(timeout: 15.0, handler: nil)
+            
+            let end = Date.timeIntervalSinceReferenceDate
+            
+            XCTAssertGreaterThan(end - start, 10.0)
+        }
     }
     
     func testResolveImages() {

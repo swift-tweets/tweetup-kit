@@ -97,7 +97,7 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
         let (value1, value2) = values
         var result1: R1?
         var result2: R2?
-        var resultError: Error?
+        var hasThrownError = false
         
         operation1(value1) { getValue in
             do {
@@ -113,12 +113,13 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
                 }
             } catch let error {
                 Async.executionQueue.async {
-                    if let resultError = resultError {
-                        completion {
-                            throw resultError
-                        }
+                    if hasThrownError {
+                        return
                     }
-                    resultError = error
+                    hasThrownError = true
+                    completion {
+                        throw error
+                    }
                 }
             }
         }
@@ -137,12 +138,13 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
                 }
             } catch let error {
                 Async.executionQueue.async {
-                    if let resultError = resultError {
-                        completion {
-                            throw resultError
-                        }
+                    if hasThrownError {
+                        return
                     }
-                    resultError = error
+                    hasThrownError = true
+                    completion {
+                        throw error
+                    }
                 }
             }
         }
