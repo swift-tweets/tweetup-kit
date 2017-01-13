@@ -3,7 +3,7 @@ import Foundation
 
 private let queue = DispatchQueue(label: "TweetupKit.CodeRenderer")
 
-public class CodeRenderer: NSObject {
+internal class CodeRenderer: NSObject {
     private var webView: WebView!
     fileprivate var loading = true
     fileprivate var _image: CGImage!
@@ -11,7 +11,7 @@ public class CodeRenderer: NSObject {
     
     fileprivate static let height: CGFloat = 736
     
-    public init(url: String) {
+    init(url: String) {
         super.init()
         
         webView = WebView(frame: NSRect(x: 0, y: 0, width: 414, height: CodeRenderer.height))
@@ -23,7 +23,7 @@ public class CodeRenderer: NSObject {
         while loading && runLoop.run(mode: .defaultRunLoopMode, before: .distantFuture) { }
     }
     
-    public func image() throws -> CGImage {
+    func image() throws -> CGImage {
         if let error = self.error {
             throw error
         }
@@ -31,7 +31,7 @@ public class CodeRenderer: NSObject {
         return _image
     }
     
-    public func writeImage(to path: String) throws {
+    func writeImage(to path: String) throws {
         let image = try self.image()
         let url = URL(fileURLWithPath: path)
         guard let destination = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil) else {
@@ -47,7 +47,7 @@ public class CodeRenderer: NSObject {
 }
 
 extension CodeRenderer: WebFrameLoadDelegate {
-    public func webView(_ sender: WebView, didFinishLoadFor frame: WebFrame) {
+    func webView(_ sender: WebView, didFinishLoadFor frame: WebFrame) {
         let document = frame.domDocument!
         let body = document.getElementsByTagName("body").item(0)!
         let bodyBox = body.boundingBox()
@@ -86,7 +86,7 @@ extension CodeRenderer: WebFrameLoadDelegate {
         loading = false
     }
     
-    public func webView(_ sender: WebView, didFailLoadWithError error: Error, for frame: WebFrame) {
+    func webView(_ sender: WebView, didFailLoadWithError error: Error, for frame: WebFrame) {
         self.error = error
         loading = false
     }
