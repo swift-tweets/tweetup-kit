@@ -18,11 +18,12 @@ public struct Speaker {
             do {
                 let ids = try getIds()
                 assert(ids.count == tweets.count)
-                for (idAndScreenName, tweet) in zip(ids, tweets) {
-                    let (id, screenName) = idAndScreenName
-                    // TODO
-                    fatalError("Unimplemented.")
-                }
+                fatalError("Unimplemented.")
+//                for (idAndScreenName, tweet) in zip(ids, tweets) {
+//                    let (id, screenName) = idAndScreenName
+//                    // TODO
+//                    fatalError("Unimplemented.")
+//                }
             } catch let error {
                 callback {
                     throw error
