@@ -34,7 +34,7 @@ class SpeakerTests: XCTestCase {
 
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n---\n\nUp above the world so high,\nLike a diamond in the sky. \(start)\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n![](\(imagePath))" // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
-            speaker.post(tweets: tweets, with: 30.0) { getIds in
+            speaker.post(tweets: tweets, with: 5.0) { getIds in
                 defer {
                     expectation.fulfill()
                 }
@@ -50,11 +50,11 @@ class SpeakerTests: XCTestCase {
                 }
             }
 
-            waitForExpectations(timeout: 89.0, handler: nil)
+            waitForExpectations(timeout: 14.0, handler: nil)
             
             let end = Date.timeIntervalSinceReferenceDate
             
-            XCTAssertGreaterThan(end - start, 60.0)
+            XCTAssertGreaterThan(end - start, 10.0)
         }
         
         do { // error duraing posting tweets

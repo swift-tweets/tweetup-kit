@@ -4,7 +4,8 @@ import Foundation
 internal struct Twitter {
     static func update(status: String, mediaId: String? = nil, credential: OAuthCredential, callback: @escaping (() throws -> (String, String)) -> ()) {
         let client = OAuthSwiftClient(credential: credential)
-
+        client.sessionFactory.queue = { .current }
+        
         var parameters = [
             "status": status
         ]
@@ -24,6 +25,7 @@ internal struct Twitter {
     
     static func upload(media: Data, credential: OAuthCredential, callback: @escaping (() throws -> String) -> ()) {
         let client = OAuthSwiftClient(credential: credential)
+        client.sessionFactory.queue = { .current }
 
         _ = client.post(
             "https://upload.twitter.com/1.1/media/upload.json",

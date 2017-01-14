@@ -46,7 +46,6 @@ public struct Speaker {
             return
         }
   
-        // TODO
         let resolve = flatten(flatten(resolveCode, resolveGist), resolveImage)
         resolve(tweet) { getTweet in
             do {
@@ -167,20 +166,13 @@ public struct Speaker {
             return
         }
         
-        DispatchQueue.main.async {
-            do {
-                let url = "https://gist.github.com/\(id)"
-                let imagePath = outputDirectoryPath.appendingPathComponent("\(id).png")
-                let codeRenderer = CodeRenderer(url: url)
-                try codeRenderer.writeImage(to: Speaker.imagePath(imagePath, from: self.baseDirectoryPath))
-                
-                callback {
-                    return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .local(imagePath))))
-                }
-            } catch let error {
-                callback {
-                    throw error
-                }
+        let url = "https://gist.github.com/\(id)"
+        let imagePath = outputDirectoryPath.appendingPathComponent("\(id).png")
+        let codeRenderer = CodeRenderer(url: url)
+        codeRenderer.writeImage(to: Speaker.imagePath(imagePath, from: self.baseDirectoryPath)) { getVoid in
+            callback {
+                try getVoid()
+                return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .local(imagePath))))
             }
         }
     }

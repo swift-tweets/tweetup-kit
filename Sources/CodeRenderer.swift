@@ -4,47 +4,65 @@ import Foundation
 internal class CodeRenderer: NSObject {
     private var webView: WebView!
     fileprivate var loading = true
-    fileprivate var _image: CGImage!
-    fileprivate var error: Error?
+    private var getImage: (() throws -> CGImage)? = nil
+    private var completions: [(() throws -> CGImage) -> ()] = []
+    private var zelf: CodeRenderer? // not to released during the async operation
     
     fileprivate static let height: CGFloat = 736
     
     init(url: String) {
         super.init()
+        zelf = self
         
-        webView = WebView(frame: NSRect(x: 0, y: 0, width: 414, height: CodeRenderer.height))
-        webView.frameLoadDelegate = self
-        webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
-        webView.mainFrameURL = url
-        
-        let runLoop = RunLoop.current
-        while loading && runLoop.run(mode: .defaultRunLoopMode, before: .distantFuture) { }
+        DispatchQueue.main.async {
+            self.webView = WebView(frame: NSRect(x: 0, y: 0, width: 414, height: CodeRenderer.height))
+            self.webView.frameLoadDelegate = self
+            self.webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
+            self.webView.mainFrameURL = url
+        }
     }
     
-    func image() throws -> CGImage {
-        if let error = self.error {
-            throw error
+    func image(completion: @escaping (() throws -> CGImage) -> ()) {
+        DispatchQueue.main.async {
+            if let getImage = self.getImage {
+                completion {
+                    try getImage()
+                }
+            }
+            
+            self.completions.append(completion)
         }
-        
-        return _image
     }
     
-    func writeImage(to path: String) throws {
-        let image = try self.image()
-        let url = URL(fileURLWithPath: path)
-        guard let destination = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil) else {
-            throw CodeRendererError.writingFailed
+    func writeImage(to path: String, completion: @escaping (() throws -> ()) -> ()) {
+        image { getImage in
+            completion {
+                let image = try getImage()
+                let url = URL(fileURLWithPath: path)
+                guard let destination = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil) else {
+                    throw CodeRendererError.writingFailed
+                }
+                
+                CGImageDestinationAddImage(destination, image, nil)
+                
+                guard CGImageDestinationFinalize(destination) else {
+                    throw CodeRendererError.writingFailed
+                }
+            }
         }
-        
-        CGImageDestinationAddImage(destination, image, nil)
-        
-        guard CGImageDestinationFinalize(destination) else {
-            throw CodeRendererError.writingFailed
+    }
+    
+    fileprivate func resolve(getImage: @escaping (() throws -> CGImage)) {
+        for completion in completions {
+            completion(getImage)
         }
+        completions.removeAll()
+        self.getImage = getImage
+        self.zelf = nil
     }
 }
 
-extension CodeRenderer: WebFrameLoadDelegate {
+extension CodeRenderer: WebFrameLoadDelegate { // called on the main thread
     func webView(_ sender: WebView, didFinishLoadFor frame: WebFrame) {
         let document = frame.domDocument!
         let body = document.getElementsByTagName("body").item(0)!
@@ -53,7 +71,7 @@ extension CodeRenderer: WebFrameLoadDelegate {
         
         let files = document.getElementsByClassName("blob-file-content")!
         guard files.length > 0 else {
-            error = CodeRendererError.illegalResponse
+            resolve(getImage: { throw CodeRendererError.illegalResponse } )
             return
         }
         let code = files.item(0) as! DOMElement
@@ -78,13 +96,27 @@ extension CodeRenderer: WebFrameLoadDelegate {
         context.draw(imageRep.cgImage!, in: targetRect)
         
         let provider: CGDataProvider = CGDataProvider(data: Data(bytes: pixels) as CFData)!
-        _image = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: width * 4, space: colorSpace, bitmapInfo: bitmapInfo, provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent)
+        resolve(getImage: {
+            CGImage(
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bitsPerPixel: 32,
+                bytesPerRow: width * 4,
+                space: colorSpace,
+                bitmapInfo: bitmapInfo,
+                provider: provider,
+                decode: nil,
+                shouldInterpolate: false,
+                intent: .defaultIntent
+            )!
+        })
         
         loading = false
     }
     
     func webView(_ sender: WebView, didFailLoadWithError error: Error, for frame: WebFrame) {
-        self.error = error
+        resolve(getImage: { throw error })
         loading = false
     }
 }
