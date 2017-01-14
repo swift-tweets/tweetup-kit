@@ -27,32 +27,6 @@ public func sync<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> (
     }
 }
 
-public func _sync<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> ()) -> ())) -> (T) throws -> R {
-    return  { value in
-        var resultValue: R!
-        var resultError: Error?
-        
-        let semaphore = DispatchSemaphore(value: 0)
-        operation(value) { getValue in
-            defer {
-                semaphore.signal()
-            }
-            do {
-                resultValue = try getValue()
-            } catch let error {
-                resultError = error
-            }
-        }
-        semaphore.wait()
-        
-        if let error = resultError {
-            throw error
-        }
-        
-        return resultValue
-    }
-}
-
 internal func repeated<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> ()) -> ()), interval: TimeInterval? = nil) -> ([T], @escaping (() throws -> [R]) -> ()) -> () {
     return { values, callback in
         _repeat(operation: operation, for: values[0..<values.count], interval: interval, callback: callback)
@@ -103,7 +77,7 @@ internal func flatten<T, U, R>(_ operation1: @escaping (T, @escaping (() throws 
 
 internal func waiting<T, R>(operation: @escaping (T, @escaping (() throws -> R) -> ()) -> (), with interval: TimeInterval) -> (T, @escaping (() throws -> R) -> ()) -> () {
     let wait: ((), @escaping (() throws -> ()) -> ()) -> () = { _, completion in
-        Async.waitQueue.asyncAfter(deadline: .now() + .milliseconds(Int(interval * 1000.0))) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(Int(interval * 1000.0))) {
             completion {
                 ()
             }
@@ -129,7 +103,7 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
         operation1(value1) { getValue in
             do {
                 let result = try getValue()
-                Async.executionQueue.async {
+                DispatchQueue.main.async {
                     guard let result2 = result2 else {
                         result1 = result
                         return
@@ -139,7 +113,7 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
                     }
                 }
             } catch let error {
-                Async.executionQueue.async {
+                DispatchQueue.main.async {
                     if hasThrownError {
                         return
                     }
@@ -154,7 +128,7 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
         operation2(value2) { getValue in
             do {
                 let result = try getValue()
-                Async.executionQueue.async {
+                DispatchQueue.main.async {
                     guard let result1 = result1 else {
                         result2 = result
                         return
@@ -164,7 +138,7 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
                     }
                 }
             } catch let error {
-                Async.executionQueue.async {
+                DispatchQueue.main.async {
                     if hasThrownError {
                         return
                     }
@@ -176,10 +150,4 @@ internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1, @escaping (() th
             }
         }
     }
-}
-
-internal struct Async {
-    internal static let sessionQueue = OperationQueue()
-    internal static let executionQueue = DispatchQueue(label: "TweetupKit")
-    fileprivate static let waitQueue = DispatchQueue(label: "TweetupKit.wait")
 }

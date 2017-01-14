@@ -89,7 +89,7 @@ class AsyncTests: XCTestCase {
 }
 
 private func asyncIncrement(value: Int, completion: @escaping (() throws -> Int) -> ()) {
-    Async.executionQueue.async {
+    DispatchQueue.main.async {
         completion {
             value + 1
         }
@@ -98,7 +98,7 @@ private func asyncIncrement(value: Int, completion: @escaping (() throws -> Int)
 
 
 private func asyncTime(_ value: (), completion: @escaping (() throws -> TimeInterval) -> ()) {
-    Async.executionQueue.async {
+    DispatchQueue.main.async {
         completion {
             Date.timeIntervalSinceReferenceDate
         }

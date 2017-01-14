@@ -1,11 +1,5 @@
 import Foundation
 
-internal struct OAuth {
-    internal static let executionContext: (@escaping () -> Void) -> Void = { block in
-        return Async.executionQueue.async(execute: block)
-    }
-}
-
 public struct OAuthCredential {
     public let consumerKey: String
     public let consumerSecret: String

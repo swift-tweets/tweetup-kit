@@ -1,8 +1,6 @@
 import WebKit
 import Foundation
 
-private let queue = DispatchQueue(label: "TweetupKit.CodeRenderer")
-
 internal class CodeRenderer: NSObject {
     private var webView: WebView!
     fileprivate var loading = true

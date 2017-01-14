@@ -3,10 +3,7 @@ import Foundation
 
 internal struct Twitter {
     static func update(status: String, mediaId: String? = nil, credential: OAuthCredential, callback: @escaping (() throws -> (String, String)) -> ()) {
-        OAuthSwiftHTTPRequest.executionContext = OAuth.executionContext
-        
         let client = OAuthSwiftClient(credential: credential)
-        client.sessionFactory.queue = Async.sessionQueue
 
         var parameters = [
             "status": status
@@ -26,10 +23,7 @@ internal struct Twitter {
     }
     
     static func upload(media: Data, credential: OAuthCredential, callback: @escaping (() throws -> String) -> ()) {
-        OAuthSwiftHTTPRequest.executionContext = OAuth.executionContext
-        
         let client = OAuthSwiftClient(credential: credential)
-        client.sessionFactory.queue = Async.sessionQueue
 
         _ = client.post(
             "https://upload.twitter.com/1.1/media/upload.json",
@@ -56,9 +50,6 @@ extension OAuthSwiftClient {
     }
     
     fileprivate func post<T>(_ url: String, parameters: OAuthSwift.Parameters, callback: @escaping (() throws -> T) -> (), completion: @escaping (OAuthSwiftResponse) throws -> (T)) -> OAuthSwiftRequestHandle? {
-        OAuthSwiftHTTPRequest.executionContext = OAuth.executionContext
-        sessionFactory.queue = Async.sessionQueue
-
         return post(
             url,
             parameters: parameters,
