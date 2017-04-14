@@ -1,7 +1,7 @@
 import Foundation
 
 public struct Tweet {
-    internal static let urlPattern = try! NSRegularExpression(pattern: "(^|\\s)(http(s)?://[a-zA-Z0-9~!@#$%&*-_=+\\[\\]|:;',./?]*)($|\\s)")
+    internal static let urlPattern = try! NSRegularExpression(pattern: "(^|\\s)((http(s)?://)?[a-zA-Z0-9\\-]+(\\.[a-zA-Z0-9\\-]+)+(/[a-zA-Z0-9~!@#$%&*\\-_=+\\[\\]|:;',./?]*)?)($|\\s)")
     internal static let urlLength = 23
     internal static let maxLength = 140
     
@@ -19,7 +19,7 @@ public struct Tweet {
     
     public var length: Int {
         let replaced = NSMutableString(string: body)
-        let numberOfUrls = Tweet.urlPattern.replaceMatches(in: replaced, options: [], range: NSMakeRange(0, replaced.length), withTemplate: "$1$4")
+        let numberOfUrls = Tweet.urlPattern.replaceMatches(in: replaced, options: [], range: NSMakeRange(0, replaced.length), withTemplate: "$1$7")
         
         let normalized = replaced.precomposedStringWithCanonicalMapping as NSString
         

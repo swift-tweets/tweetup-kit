@@ -55,6 +55,17 @@ class TweetTests: XCTestCase {
         } catch {
             XCTFail()
         }
+        
+        do { // Swift.org as a URL
+            _ = try Tweet(body: "まず Swift.org の Compiler and Standard Library を見てみました。\n> Semantic analysis includes type inference ...\nhttps://swift.org/compiler-stdlib/#compiler-architecture (6/10) #swtws")
+            XCTFail()
+        } catch let TweetInitializationError.tooLong(body, attachment, length) {
+            XCTAssertEqual(body, "まず Swift.org の Compiler and Standard Library を見てみました。\n> Semantic analysis includes type inference ...\nhttps://swift.org/compiler-stdlib/#compiler-architecture (6/10) #swtws")
+            XCTAssertNil(attachment)
+            XCTAssertEqual(length, 153)
+        } catch {
+            XCTFail()
+        }
     }
     
     func testDescription() {
@@ -148,6 +159,23 @@ class TweetTests: XCTestCase {
             do {
                 let result = results[1]
                 XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "https://swift-tweets.github.io/?foo=bar&baz=qux#tweeters")
+            }
+        }
+        
+        do {
+            let string = "まず Swift.org の Compiler and Standard Library を見てみました。\n> Semantic analysis includes type inference ...\nhttps://swift.org/compiler-stdlib/#compiler-architecture (6/10) #swtws"
+            
+            let results = Tweet.urlPattern.matches(in: string)
+            XCTAssertEqual(results.count, 2)
+            
+            do {
+                let result = results[0]
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "Swift.org")
+            }
+            
+            do {
+                let result = results[1]
+                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "https://swift.org/compiler-stdlib/#compiler-architecture")
             }
         }
     }
