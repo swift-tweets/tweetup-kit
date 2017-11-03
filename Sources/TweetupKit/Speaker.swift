@@ -140,7 +140,7 @@ public struct Speaker {
             return
         }
         
-        Gist.createGist(description: tweet.body, code: code, accessToken: githubToken) { getId in
+        Gist.createGist(description: tweet.body, code: code, accessToken: githubToken).get { getId in
             callback {
                 let id = try getId()
                 return try Tweet(body: "\(tweet.body)\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id))))
