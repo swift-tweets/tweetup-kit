@@ -2,6 +2,7 @@ import XCTest
 @testable import TweetupKit
 
 import Foundation
+import PromiseK
 
 class AsyncTests: XCTestCase {
     func testRepeated() {
@@ -10,7 +11,7 @@ class AsyncTests: XCTestCase {
             
             let start = Date.timeIntervalSinceReferenceDate
             
-            repeated(operation: asyncIncrement, interval: 2.0)(Array(1...5)) { getValues in
+            repeated(operation: asyncIncrement, interval: 2.0)(Array(1...5)).get { getValues in
                 defer {
                     expectation.fulfill()
                 }
@@ -35,7 +36,7 @@ class AsyncTests: XCTestCase {
             
             let start = Date.timeIntervalSinceReferenceDate
             
-            repeated(operation: asyncTime, interval: 2.0)([(), (), (), (), ()]) { getValues in
+            repeated(operation: asyncTime, interval: 2.0)([(), (), (), (), ()]).get { getValues in
                 defer {
                     expectation.fulfill()
                 }
@@ -44,10 +45,15 @@ class AsyncTests: XCTestCase {
                     let values = try getValues()
                     XCTAssertEqual(values.count, 5)
                     let allowableError: TimeInterval = 0.1
+                    print(values[0] - start)
                     XCTAssertLessThan(abs(values[0] - start), allowableError)
+                    print(values[1] - (values[0] + 2.0))
                     XCTAssertLessThan(abs(values[1] - (values[0] + 2.0)), allowableError)
+                    print(values[2] - (values[1] + 2.0))
                     XCTAssertLessThan(abs(values[2] - (values[1] + 2.0)), allowableError)
+                    print(values[3] - (values[2] + 2.0))
                     XCTAssertLessThan(abs(values[3] - (values[2] + 2.0)), allowableError)
+                    print(values[4] - (values[3] + 2.0))
                     XCTAssertLessThan(abs(values[4] - (values[3] + 2.0)), allowableError)
                 } catch let error {
                     XCTFail("\(error)")
@@ -67,7 +73,7 @@ class AsyncTests: XCTestCase {
         
         let start = Date.timeIntervalSinceReferenceDate
         
-        waiting(operation: asyncIncrement, with: 2.0)(42) { getValue in
+        waiting(operation: asyncIncrement, with: 2.0)(42).get { getValue in
             defer {
                 expectation.fulfill()
             }
@@ -88,19 +94,18 @@ class AsyncTests: XCTestCase {
     }
 }
 
-private func asyncIncrement(value: Int, completion: @escaping (() throws -> Int) -> ()) {
-    DispatchQueue.main.async {
-        completion {
-            value + 1
+private func asyncIncrement(value: Int) -> Promise<() throws -> Int> {
+    return Promise { fulfill in
+        DispatchQueue.main.async {
+            fulfill { value + 1 }
         }
     }
 }
 
-
-private func asyncTime(_ value: (), completion: @escaping (() throws -> TimeInterval) -> ()) {
-    DispatchQueue.main.async {
-        completion {
-            Date.timeIntervalSinceReferenceDate
+private func asyncTime(_ value: ()) -> Promise<() throws -> TimeInterval> {
+    return Promise { fulfill in
+        DispatchQueue.main.async {
+            fulfill { Date.timeIntervalSinceReferenceDate }
         }
     }
 }
