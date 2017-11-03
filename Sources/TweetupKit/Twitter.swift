@@ -1,8 +1,9 @@
 import OAuthSwift
 import Foundation
+import PromiseK
 
 internal struct Twitter {
-    static func update(status: String, mediaId: String? = nil, credential: OAuthCredential, callback: @escaping (() throws -> (String, String)) -> ()) {
+    static func update(status: String, mediaId: String? = nil, credential: OAuthCredential) -> Promise<() throws -> (String, String)> {
         let client = OAuthSwiftClient(credential: credential)
         client.sessionFactory.queue = { .current }
         
@@ -12,30 +13,34 @@ internal struct Twitter {
         if let mediaId = mediaId {
             parameters["media_ids"] = mediaId
         }
-        
-        _ = client.post(
-            "https://api.twitter.com/1.1/statuses/update.json",
-            parameters: parameters,
-            callback: callback
-        ) { response in
-            let json = try! JSONSerialization.jsonObject(with: response.data) as! [String: Any] // `!` never fails
-            return (json["id_str"] as! String, (json["user"] as! [String: Any])["screen_name"] as! String) // `!` never fails
+
+        return Promise<() throws -> (String, String)> { fulfill in
+            _ = client.post(
+                "https://api.twitter.com/1.1/statuses/update.json",
+                parameters: parameters,
+                callback: fulfill as! (() throws -> (String, String)) -> () // `as!`f as a workaround
+            ) { response in
+                let json = try! JSONSerialization.jsonObject(with: response.data) as! [String: Any] // `!` never fails
+                return (json["id_str"] as! String, (json["user"] as! [String: Any])["screen_name"] as! String) // `!` never fails
+            }
         }
     }
     
-    static func upload(media: Data, credential: OAuthCredential, callback: @escaping (() throws -> String) -> ()) {
+    static func upload(media: Data, credential: OAuthCredential) -> Promise<() throws -> String> {
         let client = OAuthSwiftClient(credential: credential)
         client.sessionFactory.queue = { .current }
 
-        _ = client.post(
-            "https://upload.twitter.com/1.1/media/upload.json",
-            parameters: [
-                "media_data": media.base64EncodedString()
-            ],
-            callback: callback
-        ) { response in
-            let json = try! JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
-            return json["media_id_string"] as! String // `!` never fails
+        return Promise<() throws -> String> { fulfill in
+            _ = client.post(
+                "https://upload.twitter.com/1.1/media/upload.json",
+                parameters: [
+                    "media_data": media.base64EncodedString()
+                ],
+                callback: fulfill as! (() throws -> String) -> ()
+            ) { response in
+                let json = try! JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
+                return json["media_id_string"] as! String // `!` never fails
+            }
         }
     }
 }

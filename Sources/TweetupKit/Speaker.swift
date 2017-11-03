@@ -70,7 +70,7 @@ public struct Speaker {
                 } else {
                     mediaId = nil
                 }
-                Twitter.update(status: status, mediaId: mediaId, credential: twitterCredential) { getId in
+                Twitter.update(status: status, mediaId: mediaId, credential: twitterCredential).get { getId in
                     callback {
                         try getId()
                     }
@@ -101,7 +101,7 @@ public struct Speaker {
         
         do {
             let imagePath = Speaker.imagePath(path, from: baseDirectoryPath)
-            Twitter.upload(media: try Data(contentsOf: URL(fileURLWithPath: imagePath)), credential: twitterCredential) { getId in
+            Twitter.upload(media: try Data(contentsOf: URL(fileURLWithPath: imagePath)), credential: twitterCredential).get { getId in
                 callback {
                     let id = try getId()
                     return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .twitter(id))))

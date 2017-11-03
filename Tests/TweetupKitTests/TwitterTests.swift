@@ -27,7 +27,7 @@ class TwitterTests: XCTestCase {
         do {
             let expectation = self.expectation(description: "")
             
-            Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", credential: credential) { getId in
+            Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", credential: credential).get { getId in
                 defer {
                     expectation.fulfill()
                 }
@@ -46,10 +46,10 @@ class TwitterTests: XCTestCase {
             let expectation = self.expectation(description: "")
             
             let data = try! Data(contentsOf: URL(fileURLWithPath: imagePath))
-            Twitter.upload(media: data, credential: credential) { getMediaId in
+            Twitter.upload(media: data, credential: credential).get { getMediaId in
                 do {
                     let mediaId = try getMediaId()
-                    Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", mediaId: mediaId, credential: credential) { getId in
+                    Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", mediaId: mediaId, credential: credential).get { getId in
                         defer {
                             expectation.fulfill()
                         }
@@ -75,7 +75,7 @@ class TwitterTests: XCTestCase {
         let expectation = self.expectation(description: "")
         
         let data = try! Data(contentsOf: URL(fileURLWithPath: imagePath))
-        Twitter.upload(media: data, credential: credential) { getId in
+        Twitter.upload(media: data, credential: credential).get { getId in
             defer {
                 expectation.fulfill()
             }
