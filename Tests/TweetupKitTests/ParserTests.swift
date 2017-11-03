@@ -275,12 +275,12 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 6)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "```swift:hello.swift\nprint(\"Hello world!\")\n```")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), ":hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "print(\"Hello world!\")\n")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(\"Hello world!\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "```swift:hello.swift\nprint(\"Hello world!\")\n```")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), ":hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 3)), "hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 4)), "print(\"Hello world!\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 5)), "print(\"Hello world!\")\n")
         }
         
         do {
@@ -291,12 +291,12 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 6)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "```swift:hello.swift\nlet s = \"Hello world!\"\nprint(s)\n```")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), ":hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "let s = \"Hello world!\"\nprint(s)\n")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(s)\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "```swift:hello.swift\nlet s = \"Hello world!\"\nprint(s)\n```")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), ":hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 3)), "hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 4)), "let s = \"Hello world!\"\nprint(s)\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 5)), "print(s)\n")
         }
         
         do {
@@ -307,12 +307,12 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 6)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), ":hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), ":hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 3)), "hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 4)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 5)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
         }
         
         do {
@@ -323,12 +323,12 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 6)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "```swift:hello.swift\nprint(\"Hello world!\")\n```")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), ":hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "print(\"Hello world!\")\n")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(\"Hello world!\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "```swift:hello.swift\nprint(\"Hello world!\")\n```")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), ":hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 3)), "hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 4)), "print(\"Hello world!\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 5)), "print(\"Hello world!\")\n")
         }
         
         do {
@@ -339,12 +339,12 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 6)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "```swift:hello.swift\nprint(\"Hello world!\")\n```")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), ":hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "print(\"Hello world!\")\n")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(\"Hello world!\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "```swift:hello.swift\nprint(\"Hello world!\")\n```")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), ":hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 3)), "hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 4)), "print(\"Hello world!\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 5)), "print(\"Hello world!\")\n")
         }
         
         do {
@@ -355,12 +355,12 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 6)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), ":hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "hello.swift")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "```swift:hello.swift\nprint(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n```")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), ":hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 3)), "hello.swift")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 4)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 5)), "print(\"1️⃣2️⃣3️⃣4️⃣5️⃣1️⃣2️⃣3️⃣4️⃣5️⃣\")\n")
         }
     }
     
@@ -373,10 +373,10 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 8)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![](path/to/image.png)")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "path/to/image.png")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(7)), "path/to/image.png")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "![](path/to/image.png)")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "path/to/image.png")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 7)), "path/to/image.png")
         }
         
         do {
@@ -387,10 +387,10 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 8)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text](path/to/image.png)")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "path/to/image.png")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(7)), "path/to/image.png")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "![alternative text](path/to/image.png)")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "alternative text")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "path/to/image.png")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 7)), "path/to/image.png")
         }
         
         do { // twitter
@@ -401,11 +401,11 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 8)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text](twitter:471592142565957632)")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "twitter:471592142565957632")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(3)), "twitter:471592142565957632")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(4)), "471592142565957632")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "![alternative text](twitter:471592142565957632)")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "alternative text")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "twitter:471592142565957632")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 3)), "twitter:471592142565957632")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 4)), "471592142565957632")
         }
         
         do { // gist
@@ -416,11 +416,11 @@ class ParserTests: XCTestCase {
             
             let result = results[0]
             XCTAssertEqual(result.numberOfRanges, 8)
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text](gist:aa5a315d61ae9438b18d)")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "gist:aa5a315d61ae9438b18d")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(5)), "gist:aa5a315d61ae9438b18d")
-            XCTAssertEqual((string as NSString).substring(with: result.rangeAt(6)), "aa5a315d61ae9438b18d")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "![alternative text](gist:aa5a315d61ae9438b18d)")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "alternative text")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "gist:aa5a315d61ae9438b18d")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 5)), "gist:aa5a315d61ae9438b18d")
+            XCTAssertEqual((string as NSString).substring(with: result.range(at: 6)), "aa5a315d61ae9438b18d")
         }
         
         do {
@@ -432,19 +432,19 @@ class ParserTests: XCTestCase {
             do {
                 let result = results[0]
                 XCTAssertEqual(result.numberOfRanges, 8)
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text 1](path/to/image1.png)")
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text 1")
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "path/to/image1.png")
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(7)), "path/to/image1.png")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "![alternative text 1](path/to/image1.png)")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "alternative text 1")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "path/to/image1.png")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 7)), "path/to/image1.png")
             }
             
             do {
                 let result = results[1]
                 XCTAssertEqual(result.numberOfRanges, 8)
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(0)), "![alternative text 2](path/to/image2.png)")
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(1)), "alternative text 2")
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "path/to/image2.png")
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(7)), "path/to/image2.png")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 0)), "![alternative text 2](path/to/image2.png)")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 1)), "alternative text 2")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "path/to/image2.png")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 7)), "path/to/image2.png")
             }
         }
         
@@ -462,7 +462,7 @@ class ParserTests: XCTestCase {
             
             let results = Tweet.hashTagPattern.matches(in: string)
             XCTAssertEqual(results.count, 1)
-            XCTAssertEqual((string as NSString).substring(with: results[0].rangeAt(0)), "#abc")
+            XCTAssertEqual((string as NSString).substring(with: results[0].range(at: 0)), "#abc")
         }
         
         do {
@@ -490,7 +490,7 @@ class ParserTests: XCTestCase {
             do {
                 let result = results[0]
                 XCTAssertEqual(result.numberOfRanges, 4)
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#swtws")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "#swtws")
             }
         }
         
@@ -503,7 +503,7 @@ class ParserTests: XCTestCase {
             do {
                 let result = results[0]
                 XCTAssertEqual(result.numberOfRanges, 4)
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#swtws")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "#swtws")
             }
         }
 
@@ -516,7 +516,7 @@ class ParserTests: XCTestCase {
             do {
                 let result = results[0]
                 XCTAssertEqual(result.numberOfRanges, 4)
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#swtws")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "#swtws")
             }
         }
         
@@ -529,19 +529,19 @@ class ParserTests: XCTestCase {
             do {
                 let result = results[0]
                 XCTAssertEqual(result.numberOfRanges, 4)
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#abc")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "#abc")
             }
             
             do {
                 let result = results[1]
                 XCTAssertEqual(result.numberOfRanges, 4)
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#def")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "#def")
             }
             
             do {
                 let result = results[2]
                 XCTAssertEqual(result.numberOfRanges, 4)
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "#ghi")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "#ghi")
             }
         }
     }

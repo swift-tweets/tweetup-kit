@@ -36,7 +36,7 @@ extension Tweet {
     
     internal static func containsHashTag(body: String, hashTag: String) -> Bool {
         return Tweet.hashTagInTweetPattern.matches(in: body).map {
-            (body as NSString).substring(with: $0.rangeAt(2))
+            (body as NSString).substring(with: $0.range(at: 2))
         }.contains(hashTag)
     }
     
@@ -58,17 +58,17 @@ extension Tweet {
     }
     
     internal static func matchingAttachments<T>(in string: String, pattern: NSRegularExpression ,initializer: (String, NSTextCheckingResult) throws -> T) throws -> [(NSRange, T)] {
-        return try pattern.matches(in: string).map { ($0.rangeAt(0), try initializer(string, $0)) }
+        return try pattern.matches(in: string).map { ($0.range(at: 0), try initializer(string, $0)) }
     }
 }
 
 extension Code {
     fileprivate init(string: String, matchingResult: NSTextCheckingResult) throws {
         let nsString = string as NSString
-        let language = Language(identifier: nsString.substring(with: matchingResult.rangeAt(1)))
+        let language = Language(identifier: nsString.substring(with: matchingResult.range(at: 1)))
         let fileName: String
         do {
-            let range = matchingResult.rangeAt(3)
+            let range = matchingResult.range(at: 3)
             if (range.location == NSNotFound) {
                 guard let filenameExtension = language.filenameExtension else {
                     throw TweetParseError.codeWithoutFileName(string)
@@ -81,7 +81,7 @@ extension Code {
         self.init(
             language: language,
             fileName: fileName,
-            body: nsString.substring(with: matchingResult.rangeAt(4))
+            body: nsString.substring(with: matchingResult.range(at: 4))
         )
     }
 }
@@ -101,7 +101,7 @@ extension Image {
         }
         
         self.init(
-            alternativeText: string.substring(with: matchingResult.rangeAt(1)),
+            alternativeText: string.substring(with: matchingResult.range(at: 1)),
             source: source
         )
     }
