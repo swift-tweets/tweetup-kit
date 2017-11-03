@@ -1,4 +1,5 @@
 import Foundation
+import PromiseK
 
 public struct Speaker {
     public let twitterCredential: OAuthCredential?
@@ -15,41 +16,33 @@ public struct Speaker {
         self.outputDirectoryPath = outputDirectoryPath
     }
     
-    public func talk(title: String, tweets: [Tweet], interval: TimeInterval?, callback: @escaping (() throws -> URL) -> ()) {
-        post(tweets: tweets, with: interval) { getIds in
-            do {
-                let ids = try getIds()
-                assert(ids.count == tweets.count)
-                fatalError("Unimplemented.")
-//                for (idAndScreenName, tweet) in zip(ids, tweets) {
-//                    let (id, screenName) = idAndScreenName
-//                    // TODO
-//                    fatalError("Unimplemented.")
-//                }
-            } catch let error {
-                callback {
-                    throw error
-                }
-            }
+    public func talk(title: String, tweets: [Tweet], interval: TimeInterval?) -> Promise<() throws -> URL> {
+        return post(tweets: tweets, with: interval).map { getIds in
+            let ids = try getIds()
+            assert(ids.count == tweets.count)
+            fatalError("Unimplemented.")
+//            for (idAndScreenName, tweet) in zip(ids, tweets) {
+//                let (id, screenName) = idAndScreenName
+//                // TODO
+//                fatalError("Unimplemented.")
+//            }
         }
     }
     
-    public func post(tweets: [Tweet], with interval: TimeInterval?, callback: @escaping (() throws -> ([(String, String)])) -> ()) {
-        repeated(operation: post, interval: interval)(tweets, callback)
+    public func post(tweets: [Tweet], with interval: TimeInterval?) -> Promise<() throws -> [(String, String)]> {
+        return repeated(operation: post, interval: interval)(tweets)
     }
     
-    public func post(tweet: Tweet, callback: @escaping (() throws -> (String, String)) -> ()) {
+    public func post(tweet: Tweet) -> Promise<() throws -> (String, String)> {
         guard let twitterCredential = twitterCredential else {
-            callback {
-                throw SpeakerError.noTwitterCredential
-            }
-            return
+            return Promise { throw SpeakerError.noTwitterCredential }
         }
   
-        let resolve = flatten(flatten(resolveCode, resolveGist), resolveImage)
-        resolve(tweet) { getTweet in
-            do {
-                let tweet = try getTweet()
+        return resolveCode(of: tweet)
+            .flatMap { self.resolveGist(of: try $0()) }
+            .flatMap { self.resolveImage(of: try $0()) }
+            .flatMap { (getTweet: () throws -> Tweet) in
+                let tweet: Tweet = try getTweet()
                 let status = tweet.body
                 let mediaId: String?
                 if let attachment = tweet.attachment {
@@ -70,47 +63,32 @@ public struct Speaker {
                 } else {
                     mediaId = nil
                 }
-                Twitter.update(status: status, mediaId: mediaId, credential: twitterCredential).get { getId in
-                    callback {
-                        try getId()
-                    }
-                }
-            } catch let error {
-                callback { throw error }
+                return Twitter.update(status: status, mediaId: mediaId, credential: twitterCredential)
+            }.map { getId in
+                try getId()
             }
-        }
     }
     
-    public func resolveImages(of tweets: [Tweet], callback: @escaping (() throws -> [Tweet]) -> ()) {
-        repeated(operation: resolveImage)(tweets, callback)
+    public func resolveImages(of tweets: [Tweet]) -> Promise<() throws -> [Tweet]> {
+        return repeated(operation: resolveImage)(tweets)
     }
     
-    public func resolveImage(of tweet: Tweet, callback: @escaping (() throws -> Tweet) -> ()) {
+    public func resolveImage(of tweet: Tweet) -> Promise<() throws -> Tweet> {
         guard case let .some(.image(image)) = tweet.attachment, case let .local(path) = image.source else {
-            callback {
-                tweet
-            }
-            return
+            return Promise { tweet }
         }
         guard let twitterCredential = twitterCredential else {
-            callback {
-                throw SpeakerError.noTwitterCredential
-            }
-            return
+            return Promise { throw SpeakerError.noTwitterCredential }
         }
         
         do {
             let imagePath = Speaker.imagePath(path, from: baseDirectoryPath)
-            Twitter.upload(media: try Data(contentsOf: URL(fileURLWithPath: imagePath)), credential: twitterCredential).get { getId in
-                callback {
-                    let id = try getId()
-                    return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .twitter(id))))
-                }
+            return Twitter.upload(media: try Data(contentsOf: URL(fileURLWithPath: imagePath)), credential: twitterCredential).map { getId in
+                let id = try getId()
+                return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .twitter(id))))
             }
         } catch let error {
-            callback {
-                throw error
-            }
+            return Promise { throw error }
         }
     }
     
@@ -122,58 +100,42 @@ public struct Speaker {
         }
     }
     
-    public func resolveCodes(of tweets: [Tweet], callback: @escaping (() throws -> [Tweet]) -> ()) {
-        repeated(operation: resolveCode)(tweets, callback)
+    public func resolveCodes(of tweets: [Tweet]) -> Promise<() throws -> [Tweet]> {
+        return repeated(operation: resolveCode)(tweets)
     }
     
-    public func resolveCode(of tweet: Tweet, callback: @escaping (() throws -> Tweet) -> ()) {
+    public func resolveCode(of tweet: Tweet) -> Promise<() throws -> Tweet> {
         guard case let .some(.code(code)) = tweet.attachment else {
-            callback {
-                tweet
-            }
-            return
+            return Promise { tweet }
         }
         guard let githubToken = githubToken else {
-            callback {
-                throw SpeakerError.noGithubToken
-            }
-            return
+            return Promise { throw SpeakerError.noGithubToken }
         }
         
-        Gist.createGist(description: tweet.body, code: code, accessToken: githubToken).get { getId in
-            callback {
-                let id = try getId()
-                return try Tweet(body: "\(tweet.body)\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id))))
-            }
+        return Gist.createGist(description: tweet.body, code: code, accessToken: githubToken).map { getId in
+            let id = try getId()
+            return try Tweet(body: "\(tweet.body)\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id))))
         }
     }
     
-    public func resolveGists(of tweets: [Tweet], callback: @escaping (() throws -> [Tweet]) -> ()) {
-        repeated(operation: resolveGist)(tweets, callback)
+    public func resolveGists(of tweets: [Tweet]) -> Promise<() throws -> [Tweet]> {
+        return repeated(operation: resolveGist)(tweets)
     }
     
-    public func resolveGist(of tweet: Tweet, callback: @escaping (() throws -> Tweet) -> ()) {
+    public func resolveGist(of tweet: Tweet) -> Promise<() throws -> Tweet> {
         guard case let .some(.image(image)) = tweet.attachment, case let .gist(id) = image.source else {
-            callback {
-                tweet
-            }
-            return
+            return Promise { tweet }
         }
         guard let outputDirectoryPath = outputDirectoryPath else {
-            callback {
-                throw SpeakerError.noOutputDirectoryPath
-            }
-            return
+            return Promise { throw SpeakerError.noOutputDirectoryPath }
         }
         
         let url = "https://gist.github.com/\(id)"
         let imagePath = outputDirectoryPath.appendingPathComponent("\(id).png")
         let codeRenderer = CodeRenderer(url: url)
-        codeRenderer.writeImage(to: Speaker.imagePath(imagePath, from: self.baseDirectoryPath)).get { getVoid in
-            callback {
-                try getVoid()
-                return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .local(imagePath))))
-            }
+        return codeRenderer.writeImage(to: Speaker.imagePath(imagePath, from: self.baseDirectoryPath)).map { getVoid in
+            try getVoid()
+            return try Tweet(body: "\(tweet.body)", attachment: .image(Image(alternativeText: image.alternativeText, source: .local(imagePath))))
         }
     }
 }

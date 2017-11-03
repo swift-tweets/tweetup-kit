@@ -34,7 +34,7 @@ class SpeakerTests: XCTestCase {
 
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n---\n\nUp above the world so high,\nLike a diamond in the sky. \(start)\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n![](\(imagePath))" // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
-            speaker.post(tweets: tweets, with: 5.0) { getIds in
+            speaker.post(tweets: tweets, with: 5.0).get { getIds in
                 defer {
                     expectation.fulfill()
                 }
@@ -66,7 +66,7 @@ class SpeakerTests: XCTestCase {
             
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n---\n\nUp above the world so high,\nLike a diamond in the sky. \(start)\n\n![](illegal/path/to/image.png)\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```" // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
-            speaker.post(tweets: tweets, with: 10.0) { getIds in
+            speaker.post(tweets: tweets, with: 10.0).get { getIds in
                 defer {
                     expectation.fulfill()
                 }
@@ -94,7 +94,7 @@ class SpeakerTests: XCTestCase {
             
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](\(imagePath))\n\n---\n\nWhen the blazing sun is gone,\nWhen he nothing shines upon,\n\n![alternative text 1](\(imagePath))\n\n---\n\nThen you show your little light,\nTwinkle, twinkle, all the night.\n\n![alternative text 2](\(imagePath))\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![alternative text 3](\(imagePath))\n\n"
             let tweets = try! Tweet.tweets(from: string)
-            speaker.resolveImages(of: tweets) { getTweets in
+            speaker.resolveImages(of: tweets).get { getTweets in
                 defer {
                     expectation.fulfill()
                 }
@@ -172,7 +172,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
-                speaker.resolveImage(of: tweet) { getTweet in
+                speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
@@ -191,7 +191,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .local(imagePath))))
-                speaker.resolveImage(of: tweet) { getTweet in
+                speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
@@ -218,7 +218,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
-                speaker.resolveImage(of: tweet) { getTweet in
+                speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
@@ -237,7 +237,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .local(imagePath))))
-                speaker.resolveImage(of: tweet) { getTweet in
+                speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
@@ -261,7 +261,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .local("image.png"))))
-                speaker.resolveImage(of: tweet) { getTweet in
+                speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
@@ -292,7 +292,7 @@ class SpeakerTests: XCTestCase {
             
             let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)\n\n---\n\nWhen the blazing sun is gone,\nWhen he nothing shines upon,\n\n```swift:hello1.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nThen you show your little light,\nTwinkle, twinkle, all the night.\n\n```swift:hello2.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n```swift:hello3.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n"
             let tweets = try! Tweet.tweets(from: string)
-            speaker.resolveCodes(of: tweets) { getTweets in
+            speaker.resolveCodes(of: tweets).get { getTweets in
                 defer {
                     expectation.fulfill()
                 }
@@ -370,7 +370,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
-                speaker.resolveCode(of: tweet) { getTweet in
+                speaker.resolveCode(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
@@ -389,7 +389,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .code(Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")")))
-                speaker.resolveCode(of: tweet) { getTweet in
+                speaker.resolveCode(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
@@ -416,7 +416,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
-                speaker.resolveCode(of: tweet) { getTweet in
+                speaker.resolveCode(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
@@ -435,7 +435,7 @@ class SpeakerTests: XCTestCase {
                 let expectation = self.expectation(description: "")
                 
                 let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .code(Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")")))
-                speaker.resolveCode(of: tweet) { getTweet in
+                speaker.resolveCode(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
                     }
