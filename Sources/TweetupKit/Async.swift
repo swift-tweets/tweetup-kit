@@ -40,45 +40,26 @@ private func _repeat<T, R>(operation: @escaping (T) -> Promise<() throws -> R>, 
         return Promise { results }
     }
     
-    let waitingOperation: (T) -> Promise<() throws -> R>
-    if let interval = interval, values.count > 1 {
-        waitingOperation = waiting(operation: operation, with: interval)
+    let resultPromise: Promise<() throws -> R>
+    if let interval = interval, !tail.isEmpty {
+        resultPromise = wait(operation(head), for: interval)
     } else {
-        waitingOperation = operation
+        resultPromise = operation(head)
     }
     
-    return waitingOperation(head).flatMap { result in
-        _repeat(operation: operation, for: tail, interval: interval, results: results + [try result()])
+    return resultPromise.flatMap { getResult in
+        _repeat(operation: operation, for: tail, interval: interval, results: results + [try getResult()])
     }
 }
 
-internal func waiting<T, R>(operation: @escaping (T) -> Promise<() throws -> R>, with interval: TimeInterval) -> (T) -> Promise<() throws -> R> {
-    let wait: () -> Promise<() throws -> ()> = {
-        Promise<() throws -> ()> { fulfill in
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(Int(interval * 1000.0))) {
-                fulfill { () }
-            }
+internal func wait<T>(_ promise: Promise<() throws -> T>, for interval: TimeInterval) -> Promise<() throws -> T> {
+    let waiting = Promise<()> { fulfill in
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(Int(interval * 1000.0))) {
+            fulfill(())
         }
     }
-    return { value in
-        join(operation, wait)(value, ()).map { getValue in
-            let (value, _) = try getValue()
-            return value
-        }
-    }
-}
-
-internal func join<T1, R1, T2, R2>(_ operation1: @escaping (T1) -> Promise<() throws -> R1>, _ operation2: @escaping (T2) -> Promise<() throws -> R2>) -> (T1, T2) -> Promise<() throws -> (R1, R2)> {
-    return  { value1, value2 in
-        let promise1 = operation1(value1)
-        let promise2 = operation2(value2)
-        
-        let results: Promise<() throws -> (R1, R2)> = promise1.flatMap { getResult1 throws -> Promise<() throws -> (R1, R2)> in
-            let result1 = try getResult1()
-            return promise2.map { getResult2 in
-                ( result1, try getResult2())
-            }
-        }
-        return results
+    return promise.flatMap { getValue in
+        let value = try getValue()
+        return waiting.map { _ in value }
     }
 }

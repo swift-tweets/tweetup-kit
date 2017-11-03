@@ -68,12 +68,13 @@ class AsyncTests: XCTestCase {
         }
     }
     
-    func testWaiting() {
+    func testWait() {
         let expectation = self.expectation(description: "")
         
         let start = Date.timeIntervalSinceReferenceDate
         
-        waiting(operation: asyncIncrement, with: 2.0)(42).get { getValue in
+        let promise = TweetupKit.wait(asyncIncrement(value: 42), for: 2.0)
+        promise.get { getValue in
             defer {
                 expectation.fulfill()
             }
