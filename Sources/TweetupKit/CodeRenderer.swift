@@ -4,15 +4,15 @@ import PromiseK
 
 internal class CodeRenderer: NSObject {
     private var webView: WebView!
-    private var fulfill: (() throws -> CGImage) -> ()
+    private var fulfill: (@escaping () throws -> CGImage) -> ()
     var image: Promise<() throws -> CGImage>
     
     private static let height: CGFloat = 736
     
     init(url: String) {
-        var _fulfill: ((() throws -> CGImage) -> ())!
-        image = Promise<() throws -> CGImage> { fulfill in
-            _fulfill = fulfill as! (() throws -> CGImage) -> ()
+        var _fulfill: ((@escaping() throws -> CGImage) -> ())!
+        image = Promise<() throws -> CGImage> { (fulfill: @escaping (@escaping () throws -> CGImage) -> ()) in
+            _fulfill = fulfill
         }
         fulfill = _fulfill
         

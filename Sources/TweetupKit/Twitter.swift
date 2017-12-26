@@ -14,11 +14,11 @@ internal struct Twitter {
             parameters["media_ids"] = mediaId
         }
 
-        return Promise<() throws -> (String, String)> { fulfill in
+        return Promise<() throws -> (String, String)> { (fulfill: @escaping (@escaping () throws -> (String, String)) -> ()) in
             _ = client.post(
                 "https://api.twitter.com/1.1/statuses/update.json",
                 parameters: parameters,
-                callback: fulfill as! (() throws -> (String, String)) -> () // `as!`f as a workaround
+                callback: { value in fulfill(value) }
             ) { response in
                 let json = try! JSONSerialization.jsonObject(with: response.data) as! [String: Any] // `!` never fails
                 return (json["id_str"] as! String, (json["user"] as! [String: Any])["screen_name"] as! String) // `!` never fails
@@ -30,13 +30,13 @@ internal struct Twitter {
         let client = OAuthSwiftClient(credential: credential)
         client.sessionFactory.queue = { .current }
 
-        return Promise<() throws -> String> { fulfill in
+        return Promise<() throws -> String> { (fulfill: @escaping (@escaping () throws -> String) -> ()) in
             _ = client.post(
                 "https://upload.twitter.com/1.1/media/upload.json",
                 parameters: [
                     "media_data": media.base64EncodedString()
                 ],
-                callback: fulfill as! (() throws -> String) -> ()
+                callback: fulfill
             ) { response in
                 let json = try! JSONSerialization.jsonObject(with: response.data, options: []) as! [String: Any]
                 return json["media_id_string"] as! String // `!` never fails
@@ -56,7 +56,7 @@ extension OAuthSwiftClient {
         )
     }
     
-    fileprivate func post<T>(_ url: String, parameters: OAuthSwift.Parameters, callback: @escaping (() throws -> T) -> (), completion: @escaping (OAuthSwiftResponse) throws -> (T)) -> OAuthSwiftRequestHandle? {
+    fileprivate func post<T>(_ url: String, parameters: OAuthSwift.Parameters, callback: @escaping (@escaping () throws -> T) -> (), completion: @escaping (OAuthSwiftResponse) throws -> (T)) -> OAuthSwiftRequestHandle? {
         return post(
             url,
             parameters: parameters,
