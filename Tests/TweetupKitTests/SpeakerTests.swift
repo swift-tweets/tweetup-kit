@@ -32,7 +32,27 @@ class SpeakerTests: XCTestCase {
             
             let expectation = self.expectation(description: "")
 
-            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n---\n\nUp above the world so high,\nLike a diamond in the sky. \(start)\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n![](\(imagePath))" // includes `start` to avoid duplicate tweets
+            let string = """
+                Twinkle, twinkle, little star,
+                How I wonder what you are! \(start)
+
+                ---
+
+                Up above the world so high,
+                Like a diamond in the sky. \(start)
+
+                ```swift:hello.swift
+                let name = "Swift"
+                print("Hello \\(name)!")
+                ```
+
+                ---
+
+                Twinkle, twinkle, little star,
+                How I wonder what you are! \(start)
+
+                ![](\(imagePath))
+                """ // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
             speaker.post(tweets: tweets, with: 5.0).get { getIds in
                 defer {
@@ -64,7 +84,27 @@ class SpeakerTests: XCTestCase {
             
             let expectation = self.expectation(description: "")
             
-            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n---\n\nUp above the world so high,\nLike a diamond in the sky. \(start)\n\n![](illegal/path/to/image.png)\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are! \(start)\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```" // includes `start` to avoid duplicate tweets
+            let string = """
+                Twinkle, twinkle, little star,
+                How I wonder what you are! \(start)
+
+                ---
+
+                Up above the world so high,
+                Like a diamond in the sky. \(start)
+
+                ![](illegal/path/to/image.png)
+
+                ---
+
+                Twinkle, twinkle, little star,
+                How I wonder what you are! \(start)
+
+                ```swift:hello.swift
+                let name = "Swift"
+                print("Hello \\(name)!")
+                ```
+                """ // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
             speaker.post(tweets: tweets, with: 10.0).get { getIds in
                 defer {
@@ -92,7 +132,50 @@ class SpeakerTests: XCTestCase {
             
             let expectation = self.expectation(description: "")
             
-            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](\(imagePath))\n\n---\n\nWhen the blazing sun is gone,\nWhen he nothing shines upon,\n\n![alternative text 1](\(imagePath))\n\n---\n\nThen you show your little light,\nTwinkle, twinkle, all the night.\n\n![alternative text 2](\(imagePath))\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![alternative text 3](\(imagePath))\n\n"
+            let string = """
+                Twinkle, twinkle, little star,
+                How I wonder what you are!
+
+                ---
+
+                Up above the world so high,
+                Like a diamond in the sky.
+
+                ```swift:hello.swift
+                let name = "Swift"
+                print("Hello \\(name)!")
+                ```
+
+                ---
+
+                Twinkle, twinkle, little star,
+                How I wonder what you are!
+
+                ![](\(imagePath))
+
+                ---
+
+                When the blazing sun is gone,
+                When he nothing shines upon,
+
+                ![alternative text 1](\(imagePath))
+
+                ---
+
+                Then you show your little light,
+                Twinkle, twinkle, all the night.
+
+                ![alternative text 2](\(imagePath))
+
+                ---
+
+                Twinkle, twinkle, little star,
+                How I wonder what you are!
+
+                ![alternative text 3](\(imagePath))
+
+
+                """
             let tweets = try! Tweet.tweets(from: string)
             speaker.resolveImages(of: tweets).get { getTweets in
                 defer {
@@ -120,7 +203,10 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!", attachment: .image(Image(alternativeText: "", source: .twitter(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Twinkle, twinkle, little star,
+                            How I wonder what you are!
+                            """, attachment: .image(Image(alternativeText: "", source: .twitter(id)))))
                     }
                     
                     do {
@@ -130,7 +216,10 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "When the blazing sun is gone,\nWhen he nothing shines upon,", attachment: .image(Image(alternativeText: "alternative text 1", source: .twitter(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            When the blazing sun is gone,
+                            When he nothing shines upon,
+                            """, attachment: .image(Image(alternativeText: "alternative text 1", source: .twitter(id)))))
                     }
                     
                     do {
@@ -140,7 +229,10 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Then you show your little light,\nTwinkle, twinkle, all the night.", attachment: .image(Image(alternativeText: "alternative text 2", source: .twitter(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Then you show your little light,
+                            Twinkle, twinkle, all the night.
+                            """, attachment: .image(Image(alternativeText: "alternative text 2", source: .twitter(id)))))
                     }
                     
                     do {
@@ -150,7 +242,10 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!", attachment: .image(Image(alternativeText: "alternative text 3", source: .twitter(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Twinkle, twinkle, little star,
+                            How I wonder what you are!
+                            """, attachment: .image(Image(alternativeText: "alternative text 3", source: .twitter(id)))))
                     }
                     
                 } catch let error {
@@ -171,7 +266,10 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
+                let tweet = try! Tweet(body: """
+                    Twinkle, twinkle, little star,
+                    How I wonder what you are!
+                    """)
                 speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
@@ -190,7 +288,10 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .local(imagePath))))
+                let tweet = try! Tweet(body: """
+                    Up above the world so high,
+                    Like a diamond in the sky.
+                    """, attachment: .image(Image(alternativeText: "alternative text", source: .local(imagePath))))
                 speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
@@ -201,7 +302,10 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .twitter(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Up above the world so high,
+                            Like a diamond in the sky.
+                            """, attachment: .image(Image(alternativeText: "alternative text", source: .twitter(id)))))
                     } catch let error {
                         XCTFail("\(error)")
                     }
@@ -217,7 +321,10 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
+                let tweet = try! Tweet(body: """
+                    Twinkle, twinkle, little star,
+                    How I wonder what you are!
+                    """)
                 speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
@@ -236,7 +343,10 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .local(imagePath))))
+                let tweet = try! Tweet(body: """
+                    Up above the world so high,
+                    Like a diamond in the sky.
+                    """, attachment: .image(Image(alternativeText: "alternative text", source: .local(imagePath))))
                 speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
@@ -260,7 +370,10 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .local("image.png"))))
+                let tweet = try! Tweet(body: """
+                    Up above the world so high,
+                    Like a diamond in the sky.
+                    """, attachment: .image(Image(alternativeText: "alternative text", source: .local("image.png"))))
                 speaker.resolveImage(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
@@ -271,7 +384,10 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .image(Image(alternativeText: "alternative text", source: .twitter(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Up above the world so high,
+                            Like a diamond in the sky.
+                            """, attachment: .image(Image(alternativeText: "alternative text", source: .twitter(id)))))
                     } catch let error {
                         XCTFail("\(error)")
                     }
@@ -290,7 +406,59 @@ class SpeakerTests: XCTestCase {
             
             let expectation = self.expectation(description: "")
             
-            let string = "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\n---\n\nUp above the world so high,\nLike a diamond in the sky.\n\n```swift:hello.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n![](path/to/image.png)\n\n---\n\nWhen the blazing sun is gone,\nWhen he nothing shines upon,\n\n```swift:hello1.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nThen you show your little light,\nTwinkle, twinkle, all the night.\n\n```swift:hello2.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n---\n\nTwinkle, twinkle, little star,\nHow I wonder what you are!\n\n```swift:hello3.swift\nlet name = \"Swift\"\nprint(\"Hello \\(name)!\")\n```\n\n"
+            let string = """
+                    Twinkle, twinkle, little star,
+                    How I wonder what you are!
+
+                    ---
+
+                    Up above the world so high,
+                    Like a diamond in the sky.
+
+                    ```swift:hello.swift
+                    let name = "Swift"
+                    print("Hello \\(name)!")
+                    ```
+
+                    ---
+
+                    Twinkle, twinkle, little star,
+                    How I wonder what you are!
+
+                    ![](path/to/image.png)
+
+                    ---
+
+                    When the blazing sun is gone,
+                    When he nothing shines upon,
+
+                    ```swift:hello1.swift
+                    let name = "Swift"
+                    print(\"Hello \\(name)!\")
+                    ```
+
+                    ---
+
+                    Then you show your little light,
+                    Twinkle, twinkle, all the night.
+
+                    ```swift:hello2.swift
+                    let name = "Swift"
+                    print("Hello \\(name)!")
+                    ```
+
+                    ---
+
+                    Twinkle, twinkle, little star,
+                    How I wonder what you are!
+
+                    ```swift:hello3.swift
+                    let name = "Swift"
+                    print("Hello \\(name)!")
+                    ```
+
+
+                    """
             let tweets = try! Tweet.tweets(from: string)
             speaker.resolveCodes(of: tweets).get { getTweets in
                 defer {
@@ -313,7 +481,12 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Up above the world so high,
+                            Like a diamond in the sky.
+
+                            https://gist.github.com/\(id)
+                            """, attachment: .image(Image(alternativeText: "", source: .gist(id)))))
                     }
                     
                     do {
@@ -328,7 +501,12 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "When the blazing sun is gone,\nWhen he nothing shines upon,\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            When the blazing sun is gone,
+                            When he nothing shines upon,
+
+                            https://gist.github.com/\(id)
+                            """, attachment: .image(Image(alternativeText: "", source: .gist(id)))))
                     }
                     
                     do {
@@ -338,7 +516,12 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Then you show your little light,\nTwinkle, twinkle, all the night.\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Then you show your little light,
+                            Twinkle, twinkle, all the night.
+
+                            https://gist.github.com/\(id)
+                            """, attachment: .image(Image(alternativeText: "", source: .gist(id)))))
                     }
                     
                     do {
@@ -348,7 +531,12 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Twinkle, twinkle, little star,
+                            How I wonder what you are!
+
+                            https://gist.github.com/\(id)
+                            """, attachment: .image(Image(alternativeText: "", source: .gist(id)))))
                     }
                     
                 } catch let error {
@@ -369,7 +557,10 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
+                let tweet = try! Tweet(body: """
+                    Twinkle, twinkle, little star,
+                    How I wonder what you are!
+                    """)
                 speaker.resolveCode(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
@@ -388,7 +579,13 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .code(Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")")))
+                let tweet = try! Tweet(body: """
+                    Up above the world so high,
+                    Like a diamond in the sky.
+                    """, attachment: .code(Code(language: .swift, fileName: "hello.swift", body: """
+                    let name = "Swift"
+                    print("Hello \\(name)!")
+                    """)))
                 speaker.resolveCode(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
@@ -399,7 +596,12 @@ class SpeakerTests: XCTestCase {
                             XCTFail()
                             return
                         }
-                        XCTAssertEqual(result, try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.\n\nhttps://gist.github.com/\(id)", attachment: .image(Image(alternativeText: "", source: .gist(id)))))
+                        XCTAssertEqual(result, try! Tweet(body: """
+                            Up above the world so high,
+                            Like a diamond in the sky.
+
+                            https://gist.github.com/\(id)
+                            """, attachment: .image(Image(alternativeText: "", source: .gist(id)))))
                     } catch let error {
                         XCTFail("\(error)")
                     }
@@ -415,7 +617,10 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Twinkle, twinkle, little star,\nHow I wonder what you are!")
+                let tweet = try! Tweet(body: """
+                    Twinkle, twinkle, little star,
+                    How I wonder what you are!
+                    """)
                 speaker.resolveCode(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
@@ -434,7 +639,13 @@ class SpeakerTests: XCTestCase {
             do {
                 let expectation = self.expectation(description: "")
                 
-                let tweet = try! Tweet(body: "Up above the world so high,\nLike a diamond in the sky.", attachment: .code(Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")")))
+                let tweet = try! Tweet(body: """
+                    Up above the world so high,
+                    Like a diamond in the sky.
+                    """, attachment: .code(Code(language: .swift, fileName: "hello.swift", body: """
+                    let name = "Swift"
+                    print("Hello \\(name)!")
+                    """)))
                 speaker.resolveCode(of: tweet).get { getTweet in
                     defer {
                         expectation.fulfill()
