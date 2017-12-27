@@ -5,7 +5,7 @@ import PromiseK
 internal class CodeRenderer: NSObject {
     private var webView: WebView!
     private var fulfill: (@escaping () throws -> CGImage) -> ()
-    var image: Promise<() throws -> CGImage>
+    private(set) var image: Promise<() throws -> CGImage>
     
     private static let height: CGFloat = 736
     
