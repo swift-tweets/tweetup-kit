@@ -10,7 +10,7 @@ internal class CodeRenderer: NSObject {
     private static let height: CGFloat = 736
     
     init(url: String) {
-        var _fulfill: ((@escaping() throws -> CGImage) -> ())!
+        var _fulfill: ((@escaping () throws -> CGImage) -> ())!
         image = Promise<() throws -> CGImage> { (fulfill: @escaping (@escaping () throws -> CGImage) -> ()) in
             _fulfill = fulfill
         }
