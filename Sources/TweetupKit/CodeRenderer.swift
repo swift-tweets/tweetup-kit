@@ -3,6 +3,7 @@ import Foundation
 import PromiseK
 
 internal class CodeRenderer: NSObject {
+    private var zelf: CodeRenderer?
     private var webView: WebView!
     private var fulfill: (@escaping () throws -> CGImage) -> ()
     private(set) var image: Promise<() throws -> CGImage>
@@ -17,6 +18,8 @@ internal class CodeRenderer: NSObject {
         fulfill = _fulfill
         
         super.init()
+        
+        zelf = self
         
         DispatchQueue.main.async {
             self.webView = WebView(frame: NSRect(x: 0, y: 0, width: 640, height: CodeRenderer.height))
@@ -53,6 +56,7 @@ extension CodeRenderer: WebFrameLoadDelegate { // called on the main thread
         let files = document.getElementsByClassName("blob-file-content")!
         guard files.length > 0 else {
             fulfill { throw CodeRendererError.illegalResponse }
+            zelf = nil
             return
         }
         let code = files.item(0) as! DOMElement
@@ -93,10 +97,12 @@ extension CodeRenderer: WebFrameLoadDelegate { // called on the main thread
             intent: .defaultIntent
         )!
         fulfill { image }
+        zelf = nil
     }
     
     func webView(_ sender: WebView, didFailLoadWithError error: Error, for frame: WebFrame) {
         fulfill { throw error }
+        zelf = nil
     }
 }
 
