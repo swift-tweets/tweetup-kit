@@ -2,7 +2,7 @@ import Foundation
 
 extension NSTextCheckingResult {
     internal func validRangeAt(_ index: Int) -> NSRange? {
-        let range = rangeAt(index)
+        let range = self.range(at: index)
         guard range.location != NSNotFound else {
             return nil
         }

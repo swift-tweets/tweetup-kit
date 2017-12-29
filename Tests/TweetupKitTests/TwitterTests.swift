@@ -27,13 +27,13 @@ class TwitterTests: XCTestCase {
         do {
             let expectation = self.expectation(description: "")
             
-            Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", credential: credential) { getId in
+            Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", credential: credential).get { getResponse in
                 defer {
                     expectation.fulfill()
                 }
                 do {
-                    let (id, _) = try getId()
-                    XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
+                    let response = try getResponse()
+                    XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: response.statusId).count == 1)
                 } catch let error {
                     XCTFail("\(error)")
                 }
@@ -46,16 +46,16 @@ class TwitterTests: XCTestCase {
             let expectation = self.expectation(description: "")
             
             let data = try! Data(contentsOf: URL(fileURLWithPath: imagePath))
-            Twitter.upload(media: data, credential: credential) { getMediaId in
+            Twitter.upload(media: data, credential: credential).get { getMediaId in
                 do {
                     let mediaId = try getMediaId()
-                    Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", mediaId: mediaId, credential: credential) { getId in
+                    Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", mediaId: mediaId, credential: credential).get { getResponse in
                         defer {
                             expectation.fulfill()
                         }
                         do {
-                            let (id, _) = try getId()
-                            XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
+                            let response = try getResponse()
+                            XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: response.statusId).count == 1)
                         } catch let error {
                             XCTFail("\(error)")
                         }
@@ -75,7 +75,7 @@ class TwitterTests: XCTestCase {
         let expectation = self.expectation(description: "")
         
         let data = try! Data(contentsOf: URL(fileURLWithPath: imagePath))
-        Twitter.upload(media: data, credential: credential) { getId in
+        Twitter.upload(media: data, credential: credential).get { getId in
             defer {
                 expectation.fulfill()
             }

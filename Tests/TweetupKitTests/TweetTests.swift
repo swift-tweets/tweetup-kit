@@ -153,12 +153,12 @@ class TweetTests: XCTestCase {
             
             do {
                 let result = results[0]
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "http://qaleido.space")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "http://qaleido.space")
             }
 
             do {
                 let result = results[1]
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "https://swift-tweets.github.io/?foo=bar&baz=qux#tweeters")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "https://swift-tweets.github.io/?foo=bar&baz=qux#tweeters")
             }
         }
         
@@ -170,12 +170,12 @@ class TweetTests: XCTestCase {
             
             do {
                 let result = results[0]
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "Swift.org")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "Swift.org")
             }
             
             do {
                 let result = results[1]
-                XCTAssertEqual((string as NSString).substring(with: result.rangeAt(2)), "https://swift.org/compiler-stdlib/#compiler-architecture")
+                XCTAssertEqual((string as NSString).substring(with: result.range(at: 2)), "https://swift.org/compiler-stdlib/#compiler-architecture")
             }
         }
     }

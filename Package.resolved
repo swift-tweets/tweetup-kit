@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "OAuthSwift",
+        "repositoryURL": "https://github.com/swift-tweets/OAuthSwift.git",
+        "state": {
+          "branch": null,
+          "revision": "2489c960e177e9413e52dabcedaa36e5f0705fd1",
+          "version": "2.0.0-beta"
+        }
+      },
+      {
+        "package": "PromiseK",
+        "repositoryURL": "https://github.com/koher/PromiseK.git",
+        "state": {
+          "branch": null,
+          "revision": "8c339c6a27b5b834dec65a66e790d736c3739c9a",
+          "version": "3.0.0-alpha.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
