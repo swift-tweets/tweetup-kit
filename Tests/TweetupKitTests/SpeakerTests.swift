@@ -54,7 +54,7 @@ class SpeakerTests: XCTestCase {
                 ![](\(imagePath))
                 """ // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
-            speaker.post(tweets: tweets, with: 5.0).get { getIds in
+            speaker.post(tweets: tweets, with: 10.0).get { getIds in
                 defer {
                     expectation.fulfill()
                 }
@@ -70,11 +70,11 @@ class SpeakerTests: XCTestCase {
                 }
             }
 
-            waitForExpectations(timeout: 14.0, handler: nil)
+            waitForExpectations(timeout: 29.0, handler: nil)
             
             let end = Date.timeIntervalSinceReferenceDate
             
-            XCTAssertGreaterThan(end - start, 10.0)
+            XCTAssertGreaterThan(end - start, 20.0)
         }
         
         do { // error duraing posting tweets
