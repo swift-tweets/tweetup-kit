@@ -3,7 +3,7 @@ import Foundation
 import PromiseK
 
 internal struct Twitter {
-    static func update(status: String, mediaId: String? = nil, credential: OAuthCredential) -> Promise<() throws -> (String, String)> {
+    static func update(status: String, mediaId: String? = nil, inReplyToStatusId: String? = nil, credential: OAuthCredential) -> Promise<() throws -> (String, String)> {
         let client = OAuthSwiftClient(credential: credential)
         client.sessionFactory.queue = { .current }
         
@@ -12,6 +12,9 @@ internal struct Twitter {
         ]
         if let mediaId = mediaId {
             parameters["media_ids"] = mediaId
+        }
+        if let inReplyToStatusId = inReplyToStatusId {
+            parameters["in_reply_to_status_id"] = inReplyToStatusId
         }
 
         return Promise<() throws -> (String, String)> { (fulfill: @escaping (@escaping () throws -> (String, String)) -> ()) in
