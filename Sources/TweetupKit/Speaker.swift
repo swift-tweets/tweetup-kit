@@ -43,10 +43,10 @@ public struct Speaker {
     }
     
     public func post(tweets: [Tweet], interval: TimeInterval?) -> Promise<() throws -> [PostResponse]> {
-        return repeated(operation: post, interval: interval)(tweets)
+        return repeated(operation: post, convert: { $0.statusId }, interval: interval)(tweets)
     }
     
-    public func post(tweet: Tweet) -> Promise<() throws -> PostResponse> {
+    public func post(tweet: Tweet, replyingTo statusId: String?) -> Promise<() throws -> PostResponse> {
         guard let twitterCredential = twitterCredential else {
             return Promise { throw SpeakerError.noTwitterCredential }
         }
@@ -76,7 +76,7 @@ public struct Speaker {
                 } else {
                     mediaId = nil
                 }
-                return Twitter.update(status: status, mediaId: mediaId, credential: twitterCredential).map { PostResponse(try $0()) }
+                return Twitter.update(status: status, mediaId: mediaId, inReplyToStatusId: statusId, credential: twitterCredential).map { PostResponse(try $0()) }
             }.map { getResponse in
                 try getResponse()
             }

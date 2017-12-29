@@ -28,27 +28,33 @@ public func sync<T, R>(operation: (@escaping (T, @escaping (() throws -> R) -> (
     }
 }
 
-internal func repeated<T, R>(operation: @escaping (T) -> Promise<() throws -> R>, interval: TimeInterval? = nil) -> ([T]) -> Promise<() throws -> [R]> {
+internal func repeated<T, R1, R2>(operation: @escaping (T, R1?) -> Promise<() throws -> R2>, convert: @escaping (R2) -> R1, interval: TimeInterval? = nil) -> ([T]) -> Promise<() throws -> [R2]> {
     return { values in
-        _repeat(operation: operation, for: values[...], interval: interval)
+        _repeat(operation: operation, for: values[...], convert: convert, interval: interval)
     }
 }
 
-private func _repeat<T, R>(operation: @escaping (T) -> Promise<() throws -> R>, for values: ArraySlice<T>, interval: TimeInterval?, results: [R] = []) -> Promise<() throws -> [R]> {
+internal func repeated<T, R>(operation: @escaping (T) -> Promise<() throws -> R>, interval: TimeInterval? = nil) -> ([T]) -> Promise<() throws -> [R]> {
+    return { values in
+        _repeat(operation: { r, _ in operation(r) }, for: values[...], convert: { $0 }, interval: interval)
+    }
+}
+
+private func _repeat<T, R1, R2>(operation: @escaping (T, R1?) -> Promise<() throws -> R2>, for values: ArraySlice<T>, convert: @escaping (R2) -> R1, interval: TimeInterval?, results: [R2] = []) -> Promise<() throws -> [R2]> {
     let (headOrNil, tail) = values.headAndTail
     guard let head = headOrNil else {
         return Promise { results }
     }
     
-    let resultPromise: Promise<() throws -> R>
+    let resultPromise: Promise<() throws -> R2>
     if let interval = interval, !tail.isEmpty {
-        resultPromise = wait(operation(head), for: interval)
+        resultPromise = wait(operation(head, results.last.map(convert)), for: interval)
     } else {
-        resultPromise = operation(head)
+        resultPromise = operation(head, results.last.map(convert))
     }
     
     return resultPromise.flatMap { getResult in
-        _repeat(operation: operation, for: tail, interval: interval, results: results + [try getResult()])
+        _repeat(operation: operation, for: tail, convert: convert, interval: interval, results: results + [try getResult()])
     }
 }
 
