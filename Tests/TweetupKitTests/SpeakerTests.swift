@@ -54,7 +54,7 @@ class SpeakerTests: XCTestCase {
                 ![](\(imagePath))
                 """ // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
-            speaker.post(tweets: tweets, with: 10.0).get { getIds in
+            speaker.post(tweets: tweets, interval: 10.0).get { getIds in
                 defer {
                     expectation.fulfill()
                 }
@@ -106,7 +106,7 @@ class SpeakerTests: XCTestCase {
                 ```
                 """ // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
-            speaker.post(tweets: tweets, with: 10.0).get { getIds in
+            speaker.post(tweets: tweets, interval: 10.0).get { getIds in
                 defer {
                     expectation.fulfill()
                 }

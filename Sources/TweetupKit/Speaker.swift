@@ -17,7 +17,7 @@ public struct Speaker {
     }
     
     public func talk(title: String, tweets: [Tweet], interval: TimeInterval?) -> Promise<() throws -> URL> {
-        return post(tweets: tweets, with: interval).map { getIds in
+        return post(tweets: tweets, interval: interval).map { getIds in
             let ids = try getIds()
             assert(ids.count == tweets.count)
             fatalError("Unimplemented.")
@@ -29,7 +29,7 @@ public struct Speaker {
         }
     }
     
-    public func post(tweets: [Tweet], with interval: TimeInterval?) -> Promise<() throws -> [(String, String)]> {
+    public func post(tweets: [Tweet], interval: TimeInterval?) -> Promise<() throws -> [(String, String)]> {
         return repeated(operation: post, interval: interval)(tweets)
     }
     
