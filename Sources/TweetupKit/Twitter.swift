@@ -3,7 +3,12 @@ import Foundation
 import PromiseK
 
 internal struct Twitter {
-    static func update(status: String, mediaId: String? = nil, inReplyToStatusId: String? = nil, credential: OAuthCredential) -> Promise<() throws -> (String, String)> {
+    struct UpdateResponse {
+        let statusId: String
+        let screenName: String
+    }
+    
+    static func update(status: String, mediaId: String? = nil, inReplyToStatusId: String? = nil, credential: OAuthCredential) -> Promise<() throws -> UpdateResponse> {
         let client = OAuthSwiftClient(credential: credential)
         client.sessionFactory.queue = { .current }
         
@@ -17,14 +22,17 @@ internal struct Twitter {
             parameters["in_reply_to_status_id"] = inReplyToStatusId
         }
 
-        return Promise<() throws -> (String, String)> { (fulfill: @escaping (@escaping () throws -> (String, String)) -> ()) in
+        return Promise<() throws -> UpdateResponse> { (fulfill: @escaping (@escaping () throws -> UpdateResponse) -> ()) in
             _ = client.post(
                 "https://api.twitter.com/1.1/statuses/update.json",
                 parameters: parameters,
                 callback: { value in fulfill(value) }
             ) { response in
                 let json = try! JSONSerialization.jsonObject(with: response.data) as! [String: Any] // `!` never fails
-                return (json["id_str"] as! String, (json["user"] as! [String: Any])["screen_name"] as! String) // `!` never fails
+                return UpdateResponse(
+                    statusId: json["id_str"] as! String,
+                    screenName: (json["user"] as! [String: Any])["screen_name"] as! String
+                ) // `!` never fails
             }
         }
     }

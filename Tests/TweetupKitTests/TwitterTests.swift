@@ -27,13 +27,13 @@ class TwitterTests: XCTestCase {
         do {
             let expectation = self.expectation(description: "")
             
-            Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", credential: credential).get { getId in
+            Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", credential: credential).get { getResponse in
                 defer {
                     expectation.fulfill()
                 }
                 do {
-                    let (id, _) = try getId()
-                    XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
+                    let response = try getResponse()
+                    XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: response.statusId).count == 1)
                 } catch let error {
                     XCTFail("\(error)")
                 }
@@ -49,13 +49,13 @@ class TwitterTests: XCTestCase {
             Twitter.upload(media: data, credential: credential).get { getMediaId in
                 do {
                     let mediaId = try getMediaId()
-                    Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", mediaId: mediaId, credential: credential).get { getId in
+                    Twitter.update(status: "TweetupKitTest: testUpdateStatus at \(Date.timeIntervalSinceReferenceDate)", mediaId: mediaId, credential: credential).get { getResponse in
                         defer {
                             expectation.fulfill()
                         }
                         do {
-                            let (id, _) = try getId()
-                            XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: id).count == 1)
+                            let response = try getResponse()
+                            XCTAssertTrue(try! NSRegularExpression(pattern: "^[0-9]+$").matches(in: response.statusId).count == 1)
                         } catch let error {
                             XCTFail("\(error)")
                         }

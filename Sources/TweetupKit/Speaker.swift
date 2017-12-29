@@ -2,6 +2,20 @@ import Foundation
 import PromiseK
 
 public struct Speaker {
+    public struct PostResponse {
+        public let statusId: String
+        public let screenName: String
+        
+        public init(statusId: String, screenName: String) {
+            self.statusId = statusId
+            self.screenName = screenName
+        }
+        
+        internal init(_ tweetResponse: Twitter.UpdateResponse) {
+            self.init(statusId: tweetResponse.statusId, screenName: tweetResponse.screenName)
+        }
+    }
+    
     public let twitterCredential: OAuthCredential?
     public let githubToken: String?
     public let qiitaToken: String?
@@ -17,23 +31,22 @@ public struct Speaker {
     }
     
     public func talk(title: String, tweets: [Tweet], interval: TimeInterval?) -> Promise<() throws -> URL> {
-        return post(tweets: tweets, interval: interval).map { getIds in
-            let ids = try getIds()
-            assert(ids.count == tweets.count)
+        return post(tweets: tweets, interval: interval).map { getResponses in
+            let responses = try getResponses()
+            assert(responses.count == tweets.count)
             fatalError("Unimplemented.")
-//            for (idAndScreenName, tweet) in zip(ids, tweets) {
-//                let (id, screenName) = idAndScreenName
+//            for (response, tweet) in zip(responses, tweets) {
 //                // TODO
 //                fatalError("Unimplemented.")
 //            }
         }
     }
     
-    public func post(tweets: [Tweet], interval: TimeInterval?) -> Promise<() throws -> [(String, String)]> {
+    public func post(tweets: [Tweet], interval: TimeInterval?) -> Promise<() throws -> [PostResponse]> {
         return repeated(operation: post, interval: interval)(tweets)
     }
     
-    public func post(tweet: Tweet) -> Promise<() throws -> (String, String)> {
+    public func post(tweet: Tweet) -> Promise<() throws -> PostResponse> {
         guard let twitterCredential = twitterCredential else {
             return Promise { throw SpeakerError.noTwitterCredential }
         }
@@ -63,9 +76,9 @@ public struct Speaker {
                 } else {
                     mediaId = nil
                 }
-                return Twitter.update(status: status, mediaId: mediaId, credential: twitterCredential)
-            }.map { getId in
-                try getId()
+                return Twitter.update(status: status, mediaId: mediaId, credential: twitterCredential).map { PostResponse(try $0()) }
+            }.map { getResponse in
+                try getResponse()
             }
     }
     

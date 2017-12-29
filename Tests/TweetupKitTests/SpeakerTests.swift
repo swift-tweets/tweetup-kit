@@ -54,17 +54,17 @@ class SpeakerTests: XCTestCase {
                 ![](\(imagePath))
                 """ // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
-            speaker.post(tweets: tweets, interval: 10.0).get { getIds in
+            speaker.post(tweets: tweets, interval: 10.0).get { getResponses in
                 defer {
                     expectation.fulfill()
                 }
                 do {
-                    let ids = try getIds()
-                    XCTAssertEqual(ids.count, 3)
+                    let responses = try getResponses()
+                    XCTAssertEqual(responses.count, 3)
                     let idPattern = try! NSRegularExpression(pattern: "^[0-9]+$")
-                    XCTAssertTrue(idPattern.matches(in: ids[0].0).count == 1)
-                    XCTAssertTrue(idPattern.matches(in: ids[1].0).count == 1)
-                    XCTAssertTrue(idPattern.matches(in: ids[2].0).count == 1)
+                    XCTAssertTrue(idPattern.matches(in: responses[0].statusId).count == 1)
+                    XCTAssertTrue(idPattern.matches(in: responses[1].statusId).count == 1)
+                    XCTAssertTrue(idPattern.matches(in: responses[2].statusId).count == 1)
                 } catch let error {
                     XCTFail("\(error)")
                 }
@@ -106,12 +106,12 @@ class SpeakerTests: XCTestCase {
                 ```
                 """ // includes `start` to avoid duplicate tweets
             let tweets = try! Tweet.tweets(from: string)
-            speaker.post(tweets: tweets, interval: 10.0).get { getIds in
+            speaker.post(tweets: tweets, interval: 10.0).get { getResponses in
                 defer {
                     expectation.fulfill()
                 }
                 do {
-                    _ = try getIds()
+                    _ = try getResponses()
                     XCTFail()
                 } catch let error {
                     print(error)
