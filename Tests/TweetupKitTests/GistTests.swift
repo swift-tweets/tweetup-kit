@@ -27,7 +27,7 @@ class GistTests: XCTestCase {
         do {
             let expectation = self.expectation(description: "")
             
-            Gist.createGist(description: "", code: Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")"), accessToken: accessToken) { getId in
+            Gist.createGist(description: "", code: Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")"), accessToken: accessToken).get { getId in
                 defer {
                     expectation.fulfill()
                 }
@@ -45,7 +45,7 @@ class GistTests: XCTestCase {
         do { // illegal access token
             let expectation = self.expectation(description: "")
             
-            Gist.createGist(description: "", code: Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")"), accessToken: "") { getId in
+            Gist.createGist(description: "", code: Code(language: .swift, fileName: "hello.swift", body: "let name = \"Swift\"\nprint(\"Hello \\(name)!\")"), accessToken: "").get { getId in
                 defer {
                     expectation.fulfill()
                 }

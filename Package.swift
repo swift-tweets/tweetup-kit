@@ -8,10 +8,11 @@ let package = Package(
         .library(name: "TweetupKit", targets: ["TweetupKit"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/koher/PromiseK.git", from: "3.0.0-alpha"),
         .package(url: "https://github.com/swift-tweets/OAuthSwift.git", from: "2.0.0-beta"),
     ],
     targets: [
-        .target(name: "TweetupKit", dependencies: ["OAuthSwift"]),
-        .testTarget(name: "TweetupKitTests", dependencies: ["TweetupKit", "OAuthSwift"]),
+        .target(name: "TweetupKit", dependencies: ["PromiseK", "OAuthSwift"]),
+        .testTarget(name: "TweetupKitTests", dependencies: ["TweetupKit", "PromiseK", "OAuthSwift"]),
     ]
 )

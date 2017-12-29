@@ -1,17 +1,24 @@
 import WebKit
 import Foundation
+import PromiseK
 
 internal class CodeRenderer: NSObject {
+    private var zelf: CodeRenderer?
     private var webView: WebView!
-    fileprivate var loading = true
-    private var getImage: (() throws -> CGImage)? = nil
-    private var completions: [(() throws -> CGImage) -> ()] = []
-    private var zelf: CodeRenderer? // not to released during the async operation
+    private var fulfill: (@escaping () throws -> CGImage) -> ()
+    private(set) var image: Promise<() throws -> CGImage>
     
-    fileprivate static let height: CGFloat = 736
+    private static let height: CGFloat = 736
     
     init(url: String) {
+        var _fulfill: ((@escaping () throws -> CGImage) -> ())!
+        image = Promise<() throws -> CGImage> { (fulfill: @escaping (@escaping () throws -> CGImage) -> ()) in
+            _fulfill = fulfill
+        }
+        fulfill = _fulfill
+        
         super.init()
+        
         zelf = self
         
         DispatchQueue.main.async {
@@ -22,43 +29,20 @@ internal class CodeRenderer: NSObject {
         }
     }
     
-    func image(completion: @escaping (() throws -> CGImage) -> ()) {
-        DispatchQueue.main.async {
-            if let getImage = self.getImage {
-                completion {
-                    try getImage()
-                }
+    func writeImage(to path: String) -> Promise<() throws -> ()> {
+        return image.map { getImage in
+            let image = try getImage()
+            let url = URL(fileURLWithPath: path)
+            guard let destination = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil) else {
+                throw CodeRendererError.writingFailed
             }
             
-            self.completions.append(completion)
-        }
-    }
-    
-    func writeImage(to path: String, completion: @escaping (() throws -> ()) -> ()) {
-        image { getImage in
-            completion {
-                let image = try getImage()
-                let url = URL(fileURLWithPath: path)
-                guard let destination = CGImageDestinationCreateWithURL(url as CFURL, kUTTypePNG, 1, nil) else {
-                    throw CodeRendererError.writingFailed
-                }
-                
-                CGImageDestinationAddImage(destination, image, nil)
-                
-                guard CGImageDestinationFinalize(destination) else {
-                    throw CodeRendererError.writingFailed
-                }
+            CGImageDestinationAddImage(destination, image, nil)
+            
+            guard CGImageDestinationFinalize(destination) else {
+                throw CodeRendererError.writingFailed
             }
         }
-    }
-    
-    fileprivate func resolve(getImage: @escaping (() throws -> CGImage)) {
-        for completion in completions {
-            completion(getImage)
-        }
-        completions.removeAll()
-        self.getImage = getImage
-        self.zelf = nil
     }
 }
 
@@ -71,7 +55,8 @@ extension CodeRenderer: WebFrameLoadDelegate { // called on the main thread
         
         let files = document.getElementsByClassName("blob-file-content")!
         guard files.length > 0 else {
-            resolve(getImage: { throw CodeRendererError.illegalResponse } )
+            fulfill { throw CodeRendererError.illegalResponse }
+            zelf = nil
             return
         }
         let code = files.item(0) as! DOMElement
@@ -88,36 +73,36 @@ extension CodeRenderer: WebFrameLoadDelegate { // called on the main thread
         
         let width = Int(codeBox2.size.width)
         let height = Int(codeBox2.size.height)
-        var pixels = [UInt8](repeating: 0, count: width * height * 4)
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue)
-        let context = CGContext(data: &pixels, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)!
-        let targetRect = CGRect(x: -codeBox2.origin.x, y: codeBox2.origin.y - CGFloat(pageBox2.size.height - codeBox2.size.height), width: pageBox2.size.width, height: pageBox2.size.height)
-        context.draw(imageRep.cgImage!, in: targetRect)
+        var data = Data(count: width * height * 4)
+        data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
+            let context = CGContext(data: bytes, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)!
+            let targetRect = CGRect(x: -codeBox2.origin.x, y: codeBox2.origin.y - CGFloat(pageBox2.size.height - codeBox2.size.height), width: pageBox2.size.width, height: pageBox2.size.height)
+            context.draw(imageRep.cgImage!, in: targetRect)
+        }
         
-        let provider: CGDataProvider = CGDataProvider(data: Data(bytes: pixels) as CFData)!
-        resolve(getImage: {
-            CGImage(
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bitsPerPixel: 32,
-                bytesPerRow: width * 4,
-                space: colorSpace,
-                bitmapInfo: bitmapInfo,
-                provider: provider,
-                decode: nil,
-                shouldInterpolate: false,
-                intent: .defaultIntent
-            )!
-        })
-        
-        loading = false
+        let provider: CGDataProvider = CGDataProvider(data: data as CFData)!
+        let image = CGImage(
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bitsPerPixel: 32,
+            bytesPerRow: width * 4,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo,
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: false,
+            intent: .defaultIntent
+        )!
+        fulfill { image }
+        zelf = nil
     }
     
     func webView(_ sender: WebView, didFailLoadWithError error: Error, for frame: WebFrame) {
-        resolve(getImage: { throw error })
-        loading = false
+        fulfill { throw error }
+        zelf = nil
     }
 }
 
