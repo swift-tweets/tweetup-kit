@@ -9,10 +9,6 @@ extension String {
         return lines
     }
     
-    internal func replacingOccurrences(of pattern: NSRegularExpression, with template: String) -> String {
-        return pattern.stringByReplacingMatches(in: self, options: [], range: NSMakeRange(0, characters.count), withTemplate: template)
-    }
-    
     internal var deletingLastPathComponent: String {
         return (self as NSString).deletingLastPathComponent
     }
