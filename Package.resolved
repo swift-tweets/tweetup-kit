@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "OAuthSwift",
-        "repositoryURL": "https://github.com/swift-tweets/OAuthSwift.git",
+        "repositoryURL": "https://github.com/OAuthSwift/OAuthSwift.git",
         "state": {
-          "branch": null,
-          "revision": "2489c960e177e9413e52dabcedaa36e5f0705fd1",
-          "version": "2.0.0-beta"
+          "branch": "master",
+          "revision": "da1e4ca42093096ffab45d03ac7f63dc9b192fcf",
+          "version": null
         }
       },
       {

@@ -9,7 +9,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/koher/PromiseK.git", from: "3.0.0-alpha"),
-        .package(url: "https://github.com/swift-tweets/OAuthSwift.git", from: "2.0.0-beta"),
+        .package(url: "https://github.com/OAuthSwift/OAuthSwift.git", .branch("master")),
     ],
     targets: [
         .target(name: "TweetupKit", dependencies: ["PromiseK", "OAuthSwift"]),

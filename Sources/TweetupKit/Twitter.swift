@@ -9,9 +9,6 @@ internal struct Twitter {
     }
     
     static func update(status: String, mediaId: String? = nil, inReplyToStatusId: String? = nil, credential: OAuthCredential) -> Promise<() throws -> UpdateResponse> {
-        let client = OAuthSwiftClient(credential: credential)
-        client.sessionFactory.queue = { .current }
-        
         var parameters = [
             "status": status
         ]
@@ -23,6 +20,9 @@ internal struct Twitter {
         }
 
         return Promise<() throws -> UpdateResponse> { (fulfill: @escaping (@escaping () throws -> UpdateResponse) -> ()) in
+            let client = OAuthSwiftClient(credential: credential)
+            client.sessionFactory.queue = OperationQueue.current!
+
             _ = client.post(
                 "https://api.twitter.com/1.1/statuses/update.json",
                 parameters: parameters,
@@ -38,10 +38,10 @@ internal struct Twitter {
     }
     
     static func upload(media: Data, credential: OAuthCredential) -> Promise<() throws -> String> {
-        let client = OAuthSwiftClient(credential: credential)
-        client.sessionFactory.queue = { .current }
-
         return Promise<() throws -> String> { (fulfill: @escaping (@escaping () throws -> String) -> ()) in
+            let client = OAuthSwiftClient(credential: credential)
+            client.sessionFactory.queue = OperationQueue.current!
+            
             _ = client.post(
                 "https://upload.twitter.com/1.1/media/upload.json",
                 parameters: [
